@@ -1,0 +1,63 @@
+DateTime::Precise version 0.01
+
+This is the DateTime::Precise package.  This module provides for the
+representation and manipulation of (almost) arbitrary locations in
+time.
+
+DateTime.pm is not intended to be a replacement for any of the
+existing Date:: or Time:: modules, but you may find it useful as a
+supplement.  Notable features:
+
+  * Date and time can include fractional seconds.
+
+  * Date is represented internally by an array of year, month, day,
+    hours, minutes, seconds, and fractions of seconds.  Using this
+    method, dates as far back as the start of the Gregorian
+    calendar) can be used.
+
+  * Methods are provided for doing date/time calculations.
+    Increment and decrement, as well as round, floor and ceil
+    functions by unit (second through year) are provided, as well as
+    simple date-difference operations.
+
+  * Methods are provided for input from and output to user-specified
+    formats (dprintf, dscanf, get_time, set_time, strftime).
+
+This module is based on the DateTime module written by Greg Fast
+(gdfast@usgs.gov).
+
+AVAILABILITY
+
+The latest version of this package is available from the author by
+contacting Blair Zajac <blair@gps.caltech.edu>.
+
+INSTALLATION
+
+In order to use this package you will need Perl version 5.004_04 or
+better.  Once that is completed, you install Proc::Generic as you
+would install any perl module library, by running these commands:
+
+	perl Makefile.PL
+	make
+	make test
+	make install
+
+If you want to install a private copy of this package in some other
+directory, then you should try to produce the initial Makefile with
+something like this command:
+
+	perl Makefile.PL LIB=~/perl
+
+DOCUMENTATION
+
+See the CHANGES file for a list of recent changes.  POD style
+documentation is included in all modules and scripts.  These are
+normally converted to manual pages end installed as part of the "make
+install" process.  You should also be able to use the 'perldoc'
+utility to extract documentation from the module files directly.
+
+COPYRIGHT
+
+Copyright (c) 1998 Blair Zajac. All rights reserved.  This package is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.

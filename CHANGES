@@ -1,0 +1,90 @@
+Thu Apr 24 12:00:00 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Version 0.01
+	First version.
+
+	Merge jpltime.pl from the JPL GPS group and DateTime.pm from
+	Greg Fast into this package.
+
+	The changes below refer to the DateTime part of this package
+	written by Greg Fast.
+
+	Revision history for DateTime.pm
+	Version numbers refer to RCS/CVS revision number.
+
+	1.4.1
+	r1.17 Thu Apr  2 1998
+	- damn.  set_from_epoch time was broken.  serves me right for
+	  not running my own 'make test'.
+
+	1.4
+	r1.16 Mon Mar 30 1998 
+	- redid documentation.  cleaned up, etc.  nothing exciting.
+	- ignored Changes file long enough for it to no longer be valid.
+
+	1.3.2
+	r1.8  Mon Sep 15 15:00:00 1997
+	- oops.  addSec was behaving very wrong on day boundaries.
+
+	1.3.1 
+	r1.7  Thu Sep 11 18:50:04 CDT 1997
+	- squashed bug in passing new a dt of form "yyyy.mm.dd" (no time)
+
+	1.3
+	r1.5  Thu Sep 11 10:20:04 CDT 1997
+        - switched internal obj storage from hash to scalar.
+
+	1.2.6
+	r1.3  Wed Sep 10 18:47:36 1997
+        - imported to CVS
+        - added 22 deadly (heh) tests to test.pl
+        - fixed subtle bug in overloaded <=> and cmp (in comparing
+	  objects with non-objects)
+
+	1.21  Fri Sep 05 20:45:55 1997
+	- suppressed some warnings	 
+
+	1.20  Fri Sep 05 20:12:22 1997
+	- added new-from-internalfmt capability.	 
+
+	1.19  Thu Sep 04 23:30:34 1997
+	- properly reset $VERSION	 
+
+	1.18  Thu Jul 31 20:42:19 1997
+	- replaced some tr///s with lc()s	 
+
+	1.17  Thu Jul 31 19:35:28 1997
+	- whee	 
+
+	1.16  Thu Jul 31 19:28:39 1997
+	- dscanf now works quietly, and doesn't die on failure.	 
+
+	1.15  Thu Jul 31 19:08:31 1997
+	- dscanf works properly	 
+
+	1.14  Thu Jul 31 18:48:51 1997
+	- functional, but vapid, dscanf inserted	 
+
+	1.13  Tue Jul 29 00:08:54 1997
+	- interim random checkin.	 
+
+	1.12  Thu Jun 19 16:42:50 1997
+	- weekday tested.  bug in AUTOLOADING of dec_* fixed.	 
+
+	1.10  Thu Jun 19 16:25:01 1997
+	- typo	 
+
+	1.9  Thu Jun 19 16:20:41 1997
+	- added weekday(), dprintf("%w")	 
+
+	1.8  Fri Jun 06 20:28:08 1997
+	- doco fixes	 
+
+	1.4  Thu May 22 20:05:07 1997
+	- started doco.  (copied to nwisw tree)	 
+
+	1.2  Fri May 09 02:23:55 1997
+	- fixed all references to Gtime	 
+
+	1.1  Tue Apr 29 22:45:51 1997
+	- Initial revision	 
