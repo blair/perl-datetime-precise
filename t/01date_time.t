@@ -4,7 +4,7 @@
 use strict;
 use vars qw($loaded);
 
-BEGIN { $| = 1; print "1..203\n"; }
+BEGIN { $| = 1; print "1..204\n"; }
 END   { print "not ok 1\n" unless $loaded; }
 
 my $ok_count = 1;
@@ -99,8 +99,8 @@ ok( $a < $b );								#  15
 ok( !($a==$b) );							#  16
 
 # test subtraction
-ok( $b-$a==709817176 );							#  17
-ok( $a-$b==-709817176 );						#  18
+ok( $b-$a ==  709817176 );						#  17
+ok( $a-$b == -709817176 );						#  18
 
 # op-num compares
 ok( "$a" > 251 );							#  19
@@ -252,9 +252,12 @@ $a->set_time('YBDHMS', 1975, 9, 26, 13, 46, 53.247);
 ok( $a->internal eq '19751026134653.247' );				# 175
 $a += 3;
 ok( $a->internal eq '19751026134656.247' );				# 176
+# Ensure that the fractional seconds are ignored when setting a new time.
+$a->set_time('YBDHMS', 1975, 9, 26, 15, 46, 53);
+ok( $a->internal eq '19751026154653' );					# 177
 # Test the failure of set_time (the time should not change).
-ok( !$a->set_time('NW') );						# 177
-ok( $a->internal eq '19751026134656.247' );				# 178
+ok( !$a->set_time('NW') );						# 178
+ok( $a->internal eq '19751026154653' );					# 179
 
 # Test the GPS week and seconds.
 $a = EmptySubclass->new;
@@ -263,47 +266,47 @@ $b->clone($a);
 my ($gps_week, $gps_seconds) = $a->gps_week_seconds_day;
 $a->clone(JANUARY_1_1970);
 $a->set_from_gps_week_seconds($gps_week, $gps_seconds);
-ok( $a == $b );								# 179
+ok( $a == $b );								# 180
 
 # Test the comparisons of fractional times.
 $a = EmptySubclass->new;
 $b = $a->new;
 $b->clone($a);
 $b += 0.3333333333;
-ok( $a != $b );								# 180
-ok( $a < $b );								# 181
-ok( $b > $a );								# 182
-ok( $a ne $b );								# 183
-ok( $a le $b );								# 184
-ok( $b ge $a );								# 185
+ok( $a != $b );								# 181
+ok( $a < $b );								# 182
+ok( $b > $a );								# 183
+ok( $a ne $b );								# 184
+ok( $a le $b );								# 185
+ok( $b ge $a );								# 186
 
 # Test the copy method.
 $a->clone(JANUARY_1_1970);
 $b->clone(JANUARY_6_1980);
-ok( $a != $b );								# 186
-ok( $a ne $b );								# 187
+ok( $a != $b );								# 187
+ok( $a ne $b );								# 188
 $b = $a->copy;
-ok( $a == $b );								# 188
-ok( $a eq $b );								# 189
+ok( $a == $b );								# 189
+ok( $a eq $b );								# 190
 
 # Test the new method that uses set_time.
 $a = DateTime::Precise->new('YDHMS', 1998, 177, 9, 15, 26.5);
-ok( $a->year    == 1998   );						# 190
-ok( $a->month   ==    6   );						# 191
-ok( $a->day     ==   26   );						# 192
-ok( $a->hours   ==    9   );						# 193
-ok( $a->minutes ==   15   );						# 194
-ok( $a->seconds ==   26.5 );						# 195
+ok( $a->year    == 1998   );						# 191
+ok( $a->month   ==    6   );						# 192
+ok( $a->day     ==   26   );						# 193
+ok( $a->hours   ==    9   );						# 194
+ok( $a->minutes ==   15   );						# 195
+ok( $a->seconds ==   26.5 );						# 196
 
 # Test julian_day.
-ok( abs($a->day_of_year - $a->julian_day - 1) < 1/$Secs_per_day );	# 196
-ok( abs($a->julian_day - 176.38572337963)     < 1/$Secs_per_day );	# 197
+ok( abs($a->day_of_year - $a->julian_day - 1) < 1/$Secs_per_day );	# 197
+ok( abs($a->julian_day - 176.38572337963)     < 1/$Secs_per_day );	# 198
 
 # Test the new() taking a Unix epoch time.
 $a = DateTime::Precise->new(1000000000);
-ok( $a->year    == 2001 );						# 198
-ok( $a->month   ==    9 );						# 199
-ok( $a->day     ==    9 );						# 200
-ok( $a->hours   ==    1 );						# 201
-ok( $a->minutes ==   46 );						# 202
-ok( $a->seconds ==   40 );						# 203
+ok( $a->year    == 2001 );						# 199
+ok( $a->month   ==    9 );						# 200
+ok( $a->day     ==    9 );						# 201
+ok( $a->hours   ==    1 );						# 202
+ok( $a->minutes ==   46 );						# 203
+ok( $a->seconds ==   40 );						# 204

@@ -1,4 +1,4 @@
-# DateTime::Precise		-*- Perl -*-
+# DateTime::Precise              -*- Perl -*-
 #
 # This code is a heavily modified version of Greg Fast's
 # (gdfast@usgs.gov) DateTime.pm package.  This version includes
@@ -16,51 +16,63 @@ use Carp qw(carp cluck croak confess);
 use Exporter;
 require 'DateTime/Math/bigfloat.pl';
 
-use vars qw(
-	    @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS
-	    $AUTOLOAD
-	    $VERSION
-	    $TZ @LC_AMPM
-	    %SET_MASK %SET_START_VALUE %SET_MULTIPLER_VALUE
-	    $USGSMidnight
-	    @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
-	    $Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
-	    %_month_name
-	    $Days_per_5_months $Days_per_4_years $Days_per_400_years
-);
+# Try to load the Time::HiRes module to get the high resolution
+# version of time.
+BEGIN {
+  eval {
+    my $module  =  'Time::HiRes';
+    my $package =  "$module.pm";
+    $package    =~ s#::#/#g;
+    require $package;
+    import $module qw(time);
+  };
+}
+
+use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS
+            $AUTOLOAD
+            $VERSION
+            $TZ @LC_AMPM
+            %SET_MASK %SET_START_VALUE %SET_MULTIPLER_VALUE
+            $USGSMidnight
+            $is_internal_format_re
+            @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
+            $Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
+            %_month_name
+            $Days_per_5_months $Days_per_4_years $Days_per_400_years);
 
 # Definitions for overloaded operators:
 # Overloaded operators: +/-, <=>, cmp, stringify.
 # Addition handles seconds, subtraction handles secs or date
 # differences.  Comparisons also work.
 use overload
-    'neg' => sub { cluck "neg is an invalid operator for " . ref($_[0]); $_[0] },
-    '""'  => 'stringify',
-    '+'   => 'ovld_add',
-    '-'   => sub { $_[2] ? &ovld_sub($_[1],$_[0]) : &ovld_sub; },
-    '<=>' => sub { $_[2] ? DateTime::Math::fcmp("$_[1]","$_[0]") :
-			   DateTime::Math::fcmp("$_[0]","$_[1]") },
-    'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
-    ;
-$VERSION   = substr q$Revision: 1.02 $, 10;
+  'neg' => sub { cluck "neg is an invalid operator for " . ref($_[0]); $_[0] },
+  '""'  => 'stringify',
+  '+'   => 'ovld_add',
+  '-'   => sub { $_[2] ? &ovld_sub($_[1],$_[0]) : &ovld_sub; },
+  '<=>' => sub { $_[2] ? DateTime::Math::fcmp("$_[1]","$_[0]") :
+                 DateTime::Math::fcmp("$_[0]","$_[1]") },
+  'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") };
+
+$VERSION   = substr q$Revision: 1.03 $, 10;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
-		@MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
-		$Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
-		&JANUARY_1_1970 &JANUARY_6_1980
-		);
-%EXPORT_TAGS = (TimeVars => [qw(
-				@MonthDays @MonthName @MonthAbbrev
-				@WeekName @WeekAbbrev
-				$Secs_per_week $Secs_per_day
-				$Secs_per_hour $Secs_per_minute
-				&JANUARY_1_1970 &JANUARY_6_1980
-				)] );
+                @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
+                $Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
+                &JANUARY_1_1970 &JANUARY_6_1980);
+%EXPORT_TAGS = (TimeVars => [qw(@MonthDays @MonthName @MonthAbbrev
+                                @WeekName @WeekAbbrev
+                                $Secs_per_week $Secs_per_day
+                                $Secs_per_hour $Secs_per_minute
+                                &JANUARY_1_1970 &JANUARY_6_1980)] );
 
 #
 # Global, internal variables.
 #
+
+# This is the regular expression to test if a string represents an
+# internal representation of the time.
+$is_internal_format_re = '^\d{14}(\.\d*)?$';
 
 # USGS, god knows why, likes midnight to be 24:00:00, not 00:00:00.
 # If $USGSMidnight is set to 1, dprintf will always print midnight as
@@ -122,16 +134,15 @@ sub SECOND   () { 5; }
 sub FRACTION () { 6; }
 
 # %_unit_name: translate function names to component indices.
-my %_unit_name = (
-		  second	=> SECOND,
-		  sec		=> SECOND,
-		  minute	=> MINUTE,
-		  min		=> MINUTE,
-		  hour		=> HOUR,
-		  day		=> DAY,
-		  month		=> MONTH,
-		  mo		=> MONTH,
-		  year		=> YEAR);
+my %_unit_name = (second	=> SECOND,
+                  sec		=> SECOND,
+                  minute	=> MINUTE,
+                  min		=> MINUTE,
+                  hour		=> HOUR,
+                  day		=> DAY,
+                  month		=> MONTH,
+                  mo		=> MONTH,
+                  year		=> YEAR);
 
 # %_unit_name: which function names to allow (see AUTOLOADER).
 my %_func_name = ('inc'=>1, 'dec'=>1, 'floor'=>1, 'ceil'=>1, 'round'=>1);
@@ -378,6 +389,18 @@ sub _FixDate {
 }
 # _FixDate
 
+# Parse the internal string of the form yyyymmddhmmss.fff.
+sub InternalStringToInternal {
+  my $in = shift;
+  my @a = unpack('a4a2a2a2a2a2a*', $in);
+  $a[6] = 0 unless $a[6];
+  if (IsOkDate(@a)) {
+    return @a;
+  } else {
+    return
+  }
+}
+
 #----------------------------------------
 # NOTES: Convert a datetime string to the components of an array.
 # ARG1 $in: datetime string ("19YY.MM.DD hh:mm:ss.sss")
@@ -401,15 +424,9 @@ sub DatetimeToInternal {
   my @ret = ();
 
   # Try to match different patterns.
-  if ($in =~ /^\d{14}/) {
-    # Try to match for the large string yyyymmddhmmss.fff.  Remove any .'s.
-    $in =~ s:\.::g;
-    my @a = unpack('a4a2a2a2a2a2a*', $in); # get components
-    # If no time was given, then it's midnight.
-    $a[6] = defined($a[6]) ? "0.$a[6]" : 0;
-    IsOkDate(@a) and @ret = @a;
-  }
-  else {
+  if ($in =~ /$is_internal_format_re/o) {
+    @ret = InternalStringToInternal($in);
+  } else {
     # 1) Protect the fractional seconds period.
     $in =~ s/(:\d+)\.(.*)/$1\200$2/;
     # 2) Convert periods to spaces.
@@ -438,8 +455,7 @@ sub DatetimeToInternal {
   }
   if (@ret) {
     return @ret;
-  }
-  else {
+  } else {
     return;
   }
 }
@@ -568,13 +584,11 @@ sub stringify {
   my $sec = $self->[SECOND] + $self->[FRACTION];
   if ($sec == int($sec)) {
     return sprintf('%04d%02d%02d%02d%02d%02d', @$self[0..SECOND]);
-  }
-  else {
+  } else {
     my $str;
     if ($sec >= 10) {
       $str = sprintf('%04d%02d%02d%02d%02d%f', @$self[0..MINUTE], $sec);
-    }
-    else {
+    } else {
       $str = sprintf('%04d%02d%02d%02d%02d0%f', @$self[0..MINUTE], $sec);
     }
     # Trim any trailing 0's.
@@ -610,25 +624,23 @@ sub new {
   # Parse the input arguments depending upon the number of arguments.
   if (@_ == 0) {
     $self->set_gmtime_from_epoch_time;
-  }
-  elsif (@_ == 1) {
+  } elsif (@_ == 1) {
     # If there is only one argument, it is either the Unix epoch time
-    # since or a date string.  If there are non-digit characters in the
-    # string or if the string is longer than 10 characters, then parse it
-    # using DatetimeToInternal, which returns a reference to an array if
-    # it could parse the date, or undef.  Because the Unix time will have
-    # only 10 digits for a very, very long time, this assumption should be
-    # safe.
+    # or a date string.  First try to match the exact internal format
+    # and parse it using InternalStringToInternal.  Otherwise, see if
+    # it is a number and treat it as an epoch time.  Finally, treat
+    # the string as a gernal time/date format.
     my $arg = shift;
-    if ($arg =~ /\D/ or length($arg) > 10) {
+    if ($arg =~ /$is_internal_format_re/o) {
+      @$self = InternalStringToInternal($arg);
+      @$self or return;
+    } elsif ($arg =~ /^\d+(\.\d*)?$/) {
+      $self->set_gmtime_from_epoch_time($arg);
+    } else {
       @$self = DatetimeToInternal($arg);
       @$self or return;
     }
-    else {
-      $self->set_gmtime_from_epoch_time($arg);
-    }
-  }
-  elsif (@_ > 1) {
+  } elsif (@_ > 1) {
     $self->set_time(@_) or return;
   }
 
@@ -1028,7 +1040,7 @@ sub internal {
   my $self = shift;
   my $in   = shift;
   if ($in) {
-    my @a = DatetimeToInternal($in);
+    my @a = InternalStringToInternal($in);
     @$self = @a if @a;
   }
   "$self";
@@ -1057,8 +1069,7 @@ sub set_from_datetime {
   }
   if ($ret) {
     return $self;
-  }
-  else {
+  } else {
     return;
   }
 }
@@ -1172,17 +1183,18 @@ sub set_from_serial_day {
 # ACCESS: method
 # EXAMPLE: $dt->set_localtime_from_epoch_time(time);
 sub set_localtime_from_epoch_time {
-  my $self  = shift;
-  my $epoch = shift;
-  $epoch    = time unless defined $epoch;
-  my @a     = localtime($epoch);
+  my $self          = shift;
+  my $time          = shift;
+  $time             = time unless defined $time;
+  my $epoch         = int($time);
+  my @a             = localtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
   $self->[DAY]      = $a[3];
   $self->[HOUR]     = $a[2];
   $self->[MINUTE]   = $a[1];
   $self->[SECOND]   = $a[0];
-  $self->[FRACTION] = 0;
+  $self->[FRACTION] = $time - $epoch;
   $self;
 }
 # set_localtime_from_epoch_time
@@ -1198,16 +1210,17 @@ sub set_localtime_from_epoch_time {
 # EXAMPLE: $dt->set_gmtime_from_epoch_time(time);
 sub set_gmtime_from_epoch_time {
   my $self  = shift;
-  my $epoch = shift;
-  $epoch    = time unless defined $epoch;
-  my @a     = gmtime($epoch);
+  my $time          = shift;
+  $time             = time unless defined $time;
+  my $epoch         = int($time);
+  my @a             = gmtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
   $self->[DAY]      = $a[3];
   $self->[HOUR]     = $a[2];
   $self->[MINUTE]   = $a[1];
   $self->[SECOND]   = $a[0];
-  $self->[FRACTION] = 0;
+  $self->[FRACTION] = $time - $epoch;
   $self;
 }
 # set_gmtime_from_epoch_time
@@ -1347,7 +1360,8 @@ sub seconds {
   my $self = shift;
 
   if (@_) {
-    $self->[SECOND] = shift;
+    $self->[SECOND]   = shift;
+    $self->[FRACTION] = 0;
     $self->_FixDate;
   }
 
@@ -1550,8 +1564,7 @@ sub dscanf {
     my @a = DatetimeToInternal($tags{'E'});
     if (@a) {
       @$self = @a;
-    }
-    else {
+    } else {
       return 'bad %E format';
     }
   } else {
@@ -1699,8 +1712,7 @@ sub inc {
   # addSec, which can add fractions of units.
   if ($unit == YEAR or $unit == MONTH) {
     $self->[$unit] += int($increment);
-  }
-  else {
+  } else {
     $self->addSec($increment, $unit);
   }
   $self->_FixDate;
@@ -1877,10 +1889,10 @@ additional GPS operations
  # Constructors and ways to set time.
  $t1 = DateTime::Precise->new;
  $t2 = DateTime::Precise->new('1998. 4. 3 12:13:44.054');
- $t3 = DateTime::Precise->new(time() - 100);
+ $t3 = DateTime::Precise->new(time() - 100.23456);
  $t4 = DateTime::Precise->new('1998.04.24');
  $t1->set_localtime_from_epoch_time;
- $t1->set_gmtime_from_epoch_time(time + 120);
+ $t1->set_gmtime_from_epoch_time(time + 120.987);
  $t1->set_from_datetime('1998.03.23 16:58:14.65');
  $t1->set_time('YDHMS', 1998, 177, 9, 15, 26.5);
 
@@ -1920,6 +1932,7 @@ additional GPS operations
  $t1 = $t4 + 3600;                      # $t1 is now an hour after midnight
  $t1->inc_month(2);                     # add two months to $t1
  $t1->floor_month;                      # set $t1 to the first of the month
+ $t1 -= 0.25;                           # subtract 1/4 of a second from $t1
 
  # Can compare and sort DateTime::Precise.
  print "It's late!!!" if ($t1 > $t4);
@@ -1962,7 +1975,7 @@ internally as 00:00:00.
 
 =item B<new>('1998. 4. 3 12:13:44')
 
-=item B<new>(time() - 100)
+=item B<new>(time() - 100.23456)
 
 =item B<new>('YDHMS', 1998, 200, 13, 16, 49.5)
 
@@ -1972,11 +1985,12 @@ time object is initialized with the time returned from I<gmtime>
 argument can be in one of three formats: "YYYY.MM.DD hh:mm:ss.ffff",
 "YYYY.MM.DD" (midnight assumed), or "YYYYMMDDhhmmss.ffff".  Here ffff
 are the fractions of seconds.  The third form sets the time using
-I<gmtime>().  The fourth form sets the time using a format as the
-first argument followed by the particular date adjustments as the
-following arguments.  See set_time() for more information.  If the new
-fails, then new returns an empty list in a list context, an undefined
-value in a scalar context, or nothing in a void context.
+I<gmtime>() with fractional seconds allowed.  The fourth form sets the
+time using a format as the first argument followed by the particular
+date adjustments as the following arguments.  See set_time() for more
+information.  If the new fails, then new returns an empty list in a
+list context, an undefined value in a scalar context, or nothing in a
+void context.
 
 Because the second and third forms pass only one argument to new(),
 there must be a way of distinguishing them.  Currently the following
@@ -2005,14 +2019,22 @@ nothing in a void context.
 
 Set from epoch time into the local time zone.  If I<epoch> is passed,
 then use that time to set the current time, otherwise use the time as
-returned from I<time>().  The newly set date/time object is returned.
+returned from I<time>() or from I<Time::HiRes::time>() if the
+Time::HiRes module can be loaded.  If the Time::HiRes::time() can be
+imported, then the resulting loaded time most likely will contain a
+fractional second component.  The newly set date/time object is
+returned.  The epoch can contain fractional seconds.
 
 =item B<set_gmtime_from_epoch_time> [I<epoch>]
 
 Set from the epoch time into the standard Greenwich time zone.  If
 I<epoch> is passed, then use that time to set the current time,
-otherwise use the time as returned from I<time>().  The newly set
-date/time object is returned.
+otherwise use the time as returned from I<time>() or from
+I<Time::HiRes::time>() if the Time::HiRes module can be loaded.  If
+the Time::HiRes::time() can be imported, then the resulting loaded
+time most likely will contain a fractional second component.  The
+newly set date/time object is returned.  The epoch can contain
+fractional seconds.
 
 =item B<set_from_day_of_year> I<year> I<day_of_year>
 

@@ -1,3 +1,19 @@
+Sun Jun 10 20:10:19 PDT 2001
+
+	* Release 1.03.
+
+Sun Jun 10 18:54:44 PDT 2001 <blair@gps.caltech.edu> (Blair Zajac) 
+ 
+	* lib/DateTime/Precise.pm: Try to import Time::HiRes::time to
+	  load a high resolution time.  Fix a bug when the time was
+	  modified using seconds() and the time had previously a
+	  non-zero fractional second component.  The previous
+	  fractional seconds would be included in a sum with the
+	  argument to seconds().  Now reset the fractional part of the
+	  time to 0 before using the seconds() argument.
+	* t/01date_time.t: Reorder a test to ensure that the above bug
+	  in seconds() is checked.
+
 Thu Feb 22 20:37:22 PST 2001 <blair@akamai.com> (Blair Zajac)
 
 	Release 1.02.
