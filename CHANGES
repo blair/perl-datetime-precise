@@ -1,3 +1,13 @@
+Thu Feb 22 20:37:22 PST 2001 <blair@akamai.com> (Blair Zajac)
+
+	Release 1.02.
+
+Thu Feb 22 20:27:46 PST 2001 <blair@akamai.com> (Blair Zajac)
+
+	Fix a bug where if 0 is passed to an increment or decrement
+	function, then it would actually increment the time by 1 unit.
+	Check for a defined value instead of a non-0 or non-'' value.
+
 Wed Jan 31 15:24:17 PST 2001 <blair@akamai.com> (Blair Zajac)
 
 	Release 1.01.
@@ -103,13 +113,13 @@ Thu Apr 24 12:00:00 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	1.3
 	r1.5  Thu Sep 11 10:20:04 CDT 1997
-        - switched internal obj storage from hash to scalar.
+	- switched internal obj storage from hash to scalar.
 
 	1.2.6
 	r1.3  Wed Sep 10 18:47:36 1997
-        - imported to CVS
-        - added 22 deadly (heh) tests to test.pl
-        - fixed subtle bug in overloaded <=> and cmp (in comparing
+	- imported to CVS
+	- added 22 deadly (heh) tests to test.pl
+	- fixed subtle bug in overloaded <=> and cmp (in comparing
 	  objects with non-objects)
 
 	1.21  Fri Sep 05 20:45:55 1997

@@ -42,7 +42,7 @@ use overload
 			   DateTime::Math::fcmp("$_[0]","$_[1]") },
     'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
     ;
-$VERSION   = substr q$Revision: 1.01 $, 10;
+$VERSION   = substr q$Revision: 1.02 $, 10;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -224,7 +224,7 @@ sub MASK_USES_MULTIPLIER () { 8; }
 # EXAMPLE: print "Yes!" if DateTime::Precise::IsLeapYear(2000);
 # ACCESS: public nonmethod
 sub IsLeapYear {
-  my $year = int(shift);
+  my $year = int($_[0]);
   ((($year%4) == 0) && ((($year%100) != 0) || (($year%400) == 0)));
 }
 # IsLeapYear
@@ -637,13 +637,11 @@ sub new {
 # new
 
 sub unix_seconds_since_epoch {
-  my $self = shift;
-  $self - JANUARY_1_1970;
+  $_[0] - JANUARY_1_1970;
 }
 
 sub gps_seconds_since_epoch {
-  my $self = shift;
-  $self - JANUARY_6_1980;
+  $_[0] - JANUARY_6_1980;
 }
 
 sub gps_week_seconds_day {
@@ -656,18 +654,15 @@ sub gps_week_seconds_day {
 }
 
 sub gps_week {
-  my $self = shift;
-  ($self->gps_week_seconds_day)[0];
+  ($_[0]->gps_week_seconds_day)[0];
 }
 
 sub gps_seconds {
-  my $self = shift;
-  ($self->gps_week_seconds_day)[1];
+  ($_[0]->gps_week_seconds_day)[1];
 }
 
 sub gps_day {
-  my $self = shift;
-  ($self->gps_week_seconds_day)[2];
+  ($_[0]->gps_week_seconds_day)[2];
 }
 
 sub asctime {
@@ -685,8 +680,9 @@ sub asctime {
 }
 
 sub strftime {
-  my $self = shift;
-  my $template = shift || '';
+  my $self     = shift;
+  my $template = shift;
+  $template    = '' unless defined $template;
 
   # Go through the template and substitute for all known patterns.
   # Change %% to \200 to protect it and not have it attach itself to
@@ -712,7 +708,7 @@ sub set_time {
   # undefined value in a scalar context, or nothing in a void context.
 
   # The template should not be empty.
-  return unless defined($template);
+  return unless defined $template;
 
   # Split up the template into individual characters.  There should be
   # some keys.
@@ -803,7 +799,7 @@ sub set_time {
 }
 
 sub get_time {
-  my $self = shift;
+  my $self     = shift;
   my $template = shift;
 
   # For each conversion, add one more value to an output array
@@ -1052,7 +1048,7 @@ sub set_from_datetime {
   my $self = shift;
   my $dt   = shift;
   my $ret  = undef;
-  if (defined($dt)) {
+  if (defined $dt) {
     my @a = DatetimeToInternal($dt);
     if (@a) {
       @$self = @a;
@@ -1083,13 +1079,13 @@ sub set_from_day_of_year {
   my $y    = shift;
   my $j    = shift;
 
-  unless (defined($y)) {
+  unless (defined $y) {
     cluck "DateTime::Precise::set_from_day_of_year called without year parameter";
     return;
   }
   $y = int($y);
 
-  unless (defined($j)) {
+  unless (defined $j) {
     cluck "DateTime::Precise::set_from_day_of_year called without day of year parameter";
     return;
   }
@@ -1152,7 +1148,7 @@ sub set_from_serial_day {
   my $self = shift;
   my $sdn  = shift;
 
-  unless (defined($sdn)) {
+  unless (defined $sdn) {
     cluck "DateTime::Precise::set_from_serial_day called without serial day parameter";
     return;
   }
@@ -1178,7 +1174,7 @@ sub set_from_serial_day {
 sub set_localtime_from_epoch_time {
   my $self  = shift;
   my $epoch = shift;
-  $epoch    = time unless defined($epoch);
+  $epoch    = time unless defined $epoch;
   my @a     = localtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
@@ -1203,7 +1199,7 @@ sub set_localtime_from_epoch_time {
 sub set_gmtime_from_epoch_time {
   my $self  = shift;
   my $epoch = shift;
-  $epoch    = time unless defined($epoch);
+  $epoch    = time unless defined $epoch;
   my @a     = gmtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
@@ -1221,12 +1217,12 @@ sub set_from_gps_week_seconds {
   my $gps_week    = shift;
   my $gps_seconds = shift;
 
-  unless (defined($gps_week)) {
+  unless (defined $gps_week) {
     cluck "DateTime::Precise::set_from_gps_week_seconds called without gps_week parameter";
     return;
   }
 
-  unless (defined($gps_seconds)) {
+  unless (defined $gps_seconds) {
     cluck "DateTime::Precise::set_from_gps_week_seconds called without gps_seconds parameter";
     return;
   }
@@ -1260,7 +1256,7 @@ sub day_of_year {
 # ACCESS: method
 # EXAMPLE: $j = $dt->julian_day;
 sub julian_day {
-  DateTime::Math::fsub(shift->day_of_year, 1);
+  DateTime::Math::fsub($_[0]->day_of_year, 1);
 }
 # julian_day
 
@@ -1614,8 +1610,7 @@ sub dscanf {
 # NOTES: SDN 0 is a saturday.  Used by dprintf().
 # ACCESS: method private
 sub weekday {
-  my $self = shift;
-  ($self->serial_day + 1) % 7;
+  ($_[0]->serial_day + 1) % 7;
 }
 # weekday
 
@@ -1627,9 +1622,14 @@ sub weekday {
 # ARG3 $unit: units (5,4,3,2) = (s,m,h,d) (negative increments are ok)
 # ACCESS: method private
 sub addSec {
-  my $self = shift;
+  my $self      = shift;
   my $increment = shift;
-  my $unit = shift || SECOND;
+  my $unit      = shift;
+  $unit         = SECOND unless defined $unit;
+
+  if ($increment == 0) {
+    return $self;
+  }
 
   # If the units are year or month then we cannot add the proper number
   # of seconds.
@@ -1675,11 +1675,19 @@ sub addSec {
 # EXAMPLE: $dt->inc(2, 13);  # add 13 days
 # EXAMPLE: $dt->inc_day(13); # does the same thing.  see AUTOLOAD().
 sub inc {
-  my $self = shift;
-  my $unit = shift;
-  my $increment = shift || 1;
+  my $self      = shift;
+  my $unit      = shift;
+  my $increment = shift;
 
-  if (!defined($unit)) {
+  if (defined $increment) {
+    if ($increment == 0) {
+      return $self;
+    }
+  } else {
+    $increment = 1;
+  }
+
+  if (!defined $unit) {
     $unit = SECOND;
     cluck "DateTime::Precise::inc Cannot increment without your unit";
   }
@@ -1708,7 +1716,7 @@ sub inc {
 sub floorceil {
   my $self = shift;
   my $unit = shift;
-  cluck "DateTime::Precise::floorceil cannot floor or ceiling without a unit" unless defined($unit);
+  cluck "DateTime::Precise::floorceil cannot floor or ceiling without a unit" unless defined $unit;
   my $function = shift;	# 1 for ceil, 0 for floor, 2 for round
   # inc unit, so we play with the appropriate parts
   $unit++;
@@ -1800,7 +1808,7 @@ sub AUTOLOAD {
     $self->inc($_unit_name{$unit}, @_);
   } elsif ($func eq 'dec') {
     $increment = shift;
-    $increment = 1 unless defined($increment);
+    $increment = 1 unless defined $increment;
     $self->inc($_unit_name{$unit}, -$increment);
   } elsif ($func eq 'floor') {
     $self->floorceil($_unit_name{$unit}, 0);
@@ -1937,9 +1945,9 @@ are added.  The library handles fractional seconds and some date/time
 manipulations used for the Global Positioning Satellite system.
 
 The operators +/-, <=>, cmp, stringify are overloaded.  Addition
-handles seconds and fractions of seconds, subtraction handles
-seconds or date differences, compares work, and stringification
-returns the a representation of the date.
+handles seconds and fractions of seconds, subtraction handles seconds
+or date differences, compares work, and stringification returns the a
+representation of the date.
 
 The US Geological Survey (USGS), likes midnight to be 24:00:00, not
 00:00:00.  If $DateTime::Precise::USGSMidnight is set, dprintf will
@@ -1958,26 +1966,26 @@ internally as 00:00:00.
 
 =item B<new>('YDHMS', 1998, 200, 13, 16, 49.5)
 
-This creates a new time object.  If no argument is passed, then
-the time object is initialized with the time returned from
-I<gmtime> (I<time>()).  The second form is used to set the time
-explicitly.  The argument can be in one of three formats:
-"YYYY.MM.DD hh:mm:ss.ffff", "YYYY.MM.DD" (midnight assumed), or
-"YYYYMMDDhhmmss.ffff".  Here ffff are the fractions of seconds.
-The third form sets the time using I<gmtime>().  The fourth form
-sets the time using a format as the first argument followed by the
-particular date adjustments as the following arguments.  See
-L<set_time> for more information.  If the new fails, then new
-returns an empty list in a list context, an undefined value in
-a scalar context, or nothing in a void context.
+This creates a new time object.  If no argument is passed, then the
+time object is initialized with the time returned from I<gmtime>
+(I<time>()).  The second form is used to set the time explicitly.  The
+argument can be in one of three formats: "YYYY.MM.DD hh:mm:ss.ffff",
+"YYYY.MM.DD" (midnight assumed), or "YYYYMMDDhhmmss.ffff".  Here ffff
+are the fractions of seconds.  The third form sets the time using
+I<gmtime>().  The fourth form sets the time using a format as the
+first argument followed by the particular date adjustments as the
+following arguments.  See set_time() for more information.  If the new
+fails, then new returns an empty list in a list context, an undefined
+value in a scalar context, or nothing in a void context.
 
 Because the second and third forms pass only one argument to new(),
 there must be a way of distinguishing them.  Currently the following
-test is used:  if any non-digit characters are found in the argument
-or if the string form of the argument is longer than 10 character, 
-then assume it to be a string to parse for the date.  Otherwise it is
-the time since the Unix epoch.  The string length of 10 was chosen since
-when the Unix epoch time flips to 11 digits, it'll be roughly year 2287.
+test is used: if any non-digit characters are found in the argument or
+if the string form of the argument is longer than 10 character, then
+assume it to be a string to parse for the date.  Otherwise it is the
+time since the Unix epoch.  The string length of 10 was chosen since
+when the Unix epoch time flips to 11 digits, it'll be roughly year
+2287.
 
 =back 4
 
@@ -1988,10 +1996,10 @@ when the Unix epoch time flips to 11 digits, it'll be roughly year 2287.
 =item B<set_from_datetime> I<datetime>
 
 Set date/time from passed date/time string "YYYY.MM.DD hh:mm:ss.fff".
-If I<set_from_datetime> successfully parses I<datetime>, then the newly
-set date/time object is returned, otherwise it returns an empty list in
-a list context, an undefined value in a scalar context, or nothing in a
-void context.
+If B<set_from_datetime> successfully parses I<datetime>, then the
+newly set date/time object is returned, otherwise it returns an empty
+list in a list context, an undefined value in a scalar context, or
+nothing in a void context.
 
 =item B<set_localtime_from_epoch_time> [I<epoch>]
 
@@ -2001,39 +2009,40 @@ returned from I<time>().  The newly set date/time object is returned.
 
 =item B<set_gmtime_from_epoch_time> [I<epoch>]
 
-Set from the epoch time into the standard Greenwich time zone.  If I<epoch>
-is passed, then use that time to set the current time, otherwise use the
-time as returned from I<time>().  The newly set date/time object is returned.
+Set from the epoch time into the standard Greenwich time zone.  If
+I<epoch> is passed, then use that time to set the current time,
+otherwise use the time as returned from I<time>().  The newly set
+date/time object is returned.
 
 =item B<set_from_day_of_year> I<year> I<day_of_year>
 
 Set date/from from the year and the decimal day of the year.  Midnight
 January 1st is day 1, noon January 1st is 1.5, etc.  If the date was
-successfully set, then the newly set date/time object is returned, otherwise
-it returns an empty list in a list context, an undefined value in a scalar
-context, or nothing in a void context.
+successfully set, then the newly set date/time object is returned,
+otherwise it returns an empty list in a list context, an undefined
+value in a scalar context, or nothing in a void context.
 
 =item B<set_from_serial_day> I<serial_day_number>
 
-Set the date/time from the serial day.  See also L<serial_day>().  If the
-date was successfully set, then the newly set date/time object is returned,
-otherwise is returns an empty list in a list context, an undefined value in
-a scalar context, or nothing in a void context.
+Set the date/time from the serial day.  See also serial_day().  If the
+date was successfully set, then the newly set date/time object is
+returned, otherwise is returns an empty list in a list context, an
+undefined value in a scalar context, or nothing in a void context.
 
 =item B<set_from_gps_week_seconds> I<gps_week> I<gps_seconds>
 
-Set the current time using the number of weeks and seconds into the week
-since GPS epoch (January 6, 1980 UTC).  If the date was successfully set,
-then the newly set date/time object is returned, otherwise is returns an
-empty list in a list context, an undefined value in a scalar context, or
-nothing in a void context.
+Set the current time using the number of weeks and seconds into the
+week since GPS epoch (January 6, 1980 UTC).  If the date was
+successfully set, then the newly set date/time object is returned,
+otherwise is returns an empty list in a list context, an undefined
+value in a scalar context, or nothing in a void context.
 
 =item B<set_time> I<format> [I<arg>, [I<arg>, ...]]
 
 Set the time.  I<format> is a string composed of a select set of
-characters.  Some characters may take an optional argument, which
-are listed following the I<format> argument in the same order as
-the characters.  The first character must be an absolute time:
+characters.  Some characters may take an optional argument, which are
+listed following the I<format> argument in the same order as the
+characters.  The first character must be an absolute time:
 
     N => Set time to now.  No argument taken.
     G => Set time to GPS time 0 (January 6, 1980).  No argument taken.
@@ -2052,10 +2061,10 @@ characters:
     M => Add minutes to time.  Argument taken.
     S => Add seconds to time.  Argument taken.
 
-If the date and time was successfully set, then it returns the newly set
-date/time object, otherwise I<set_time> returns an empty list in a list
-context, an undefined value in a scalar context, or nothing in a void
-context and the date and time remain unchanged.
+If the date and time was successfully set, then it returns the newly
+set date/time object, otherwise I<set_time>() returns an empty list in
+a list context, an undefined value in a scalar context, or nothing in
+a void context and the date and time remain unchanged.
 
 =item B<get_time> I<string>
 
@@ -2063,52 +2072,52 @@ Return an array, where each element of the array corresponds to the
 corresponding I<strftime>() value.  This string should not contain %
 characters.  This method is a much, much better and faster way of
 doing
+
     map {$self->strftime("%$_")} split(//, $string)
 
 =item B<year> [I<year>]
 
-Return the year.  If an argument is passed to I<year>(), then set the
-year to the the integer part of the argument and then return the
-newly set year.
+Return the year.  If an argument is passed to B<year>, then set the
+year to the the integer part of the argument and then return the newly
+set year.
 
 =item B<month> [I<month>]
 
 Return the numerical month (1 = January, 12 = December).  If an
-argument is passed to I<month>(), then set the month to the integer
-part of the argument and return the newly set month.
+argument is passed to B<month>, then set the month to the integer part
+of the argument and return the newly set month.
 
 =item B<day> [I<day>]
 
-Return the day of the month.  If an argument is passed to I<day>(),
-then set the day to the integer part of the argument and return
-the newly set day.
+Return the day of the month.  If an argument is passed to B<day>, then
+set the day to the integer part of the argument and return the newly
+set day.
 
 =item B<hours> [I<hours>]
 
-Return the hours in the day.  If an argument is passed to I<hours>(),
-then set the hours to the integer part of the argument and return
-the newly set hours.
+Return the hours in the day.  If an argument is passed to B<hours>,
+then set the hours to the integer part of the argument and return the
+newly set hours.
 
 =item B<minutes> [I<minutes>]
 
 Return the minutes in the hour.  If an argument is passed to
-I<minutes>(), then set the minutes to the integer part of the
-argument and return the newly set minutes.
+B<minutes>, then set the minutes to the integer part of the argument
+and return the newly set minutes.
 
 =item B<seconds> [I<seconds>]
 
 Return the seconds in the minutes.  If an argument is passed to
-I<seconds>(), then set the seconds to the argument and return the
-newly set seconds.  This argument accepts fractional seconds and
-will return the fractional seconds.
+B<seconds>, then set the seconds to the argument and return the newly
+set seconds.  This argument accepts fractional seconds and will return
+the fractional seconds.
 
 =item B<serial_day>
 
 Returns a serial day number representing the date, plus a fraction
 representing the time since midnight (i.e., noon=0.5).  This is for
-applications which need an scale index (we use it for positioning
-a date on a time-series graph axis).  See also
-L<set_from_serial_day>().
+applications which need an scale index (we use it for positioning a
+date on a time-series graph axis).  See also set_from_serial_day().
 
 =item B<day_of_year>
 
@@ -2131,24 +2140,24 @@ Return the time in seconds between the object and January 6, 1980 UTC.
 
 =item B<gps_week_seconds_day>
 
-Return an array consisting of the GPS week 0 filled to four
-spaces, the number of seconds into the GPS week, and the GPS day,
-where day 0 is Sunday.
+Return an array consisting of the GPS week 0 filled to four spaces,
+the number of seconds into the GPS week, and the GPS day, where day 0
+is Sunday.
 
 =item B<gps_week>
 
-Return the GPS week of the object.  The returned number is 0
-filled to four digits.
+Return the GPS week of the object.  The returned number is 0 filled to
+four digits.
 
 =item B<gps_seconds>
 
-Return the number of seconds into the current GPS week for the
-current object.
+Return the number of seconds into the current GPS week for the current
+object.
 
 =item B<gps_day>
 
-Return the GPS day of the week for the current object, where day 0
-is Sunday.
+Return the GPS day of the week for the current object, where day 0 is
+Sunday.
 
 =item B<copy>
 
@@ -2181,36 +2190,34 @@ where x is one of:
     w      day of the week (0..6, or "Mon", etc.)
     E      internal string (no ~^*-)
 
-so, for example, to get a string in datetime format, you would
-pass a string of '%^Y.%M.%D %h:%m:%s', or, to get a ctime-like
-string, you would pass: C<'%~w %~M %-D %h:%m:%s CDT %^Y'> (presuming
-you're in the CDT.  Maybe timezone support will show up some day).
+so, for example, to get a string in datetime format, you would pass a
+string of '%^Y.%M.%D %h:%m:%s', or, to get a ctime-like string, you
+would pass: C<'%~w %~M %-D %h:%m:%s CDT %^Y'> (presuming you're in the
+CDT.  Maybe timezone support will show up some day).
 
 =item B<dscanf> I<format> I<string>
 
 Takes a format string I<format>, and use it to read the date and time
 fields from the supplied I<string>.  The current date and time is
-unchanged if I<dscanf>() fails.
+unchanged if B<dscanf> fails.
 
-All format characters recognized by L<dprintf>() are valid.  Two
-additional characters are recognized, 'U' which sets the time to
-the local time/date using the number of seconds since Unix epoch
-time and 'u' which sets the time to GMT time/date using the number
-of seconds since Unix epoch time.  Unless exact characters are supplied
-or format characters are concatenated, will separate on non-matching
-characters.
+All format characters recognized by dprintf() are valid.  Two
+additional characters are recognized, 'U' which sets the time to the
+local time/date using the number of seconds since Unix epoch time and
+'u' which sets the time to GMT time/date using the number of seconds
+since Unix epoch time.  Unless exact characters are supplied or format
+characters are concatenated, will separate on non-matching characters.
 
 =item B<strftime> I<format>
 
-Just like the I<strftime>() function call.  This version is based
-on the Solaris manual page.  I<format> is a string containing of
-zero or more conversion specifications.  A specification character
-consists of a '%' (percent) character followed by one conversion
-characters that determine the conversion specifications behavior.
-All ordinary characters are copied unchanged to the return string.
+Just like the I<strftime>() function call.  This version is based on
+the Solaris manual page.  I<format> is a string containing of zero or
+more conversion specifications.  A specification character consists of
+a '%' (percent) character followed by one conversion characters that
+determine the conversion specifications behavior.  All ordinary
+characters are copied unchanged to the return string.
 
-The following GPS specific conversions are supported in this
-strftime:
+The following GPS specific conversions are supported in this strftime:
     %s    the seconds since UTC January 1, 1970
     %G    the GPS week (4 digits with leading 0's)
     %g    the GPS seconds into the GPS week with no leading zeros
@@ -2280,8 +2287,8 @@ one of (inc, dec, floor, ceil, round) and unit is one of (second,
 minute, hour, day, month, year) [second and minute can be abbreviated
 as sec and min respectively].
 
-I<inc_unit>(i) increments the date by i I<unit>s (i defaults to 1 if no
-parameter is supplied).  For days through seconds, fractional
+I<inc_unit>(i) increments the date by i I<unit>s (i defaults to 1 if
+no parameter is supplied).  For days through seconds, fractional
 increments are allowed.  However, for months and years, only the
 integer part of the increment is used.
 
@@ -2294,9 +2301,9 @@ after xx:30:00, minutes on or after 30 seconds; seconds on or after
 0.5 seconds.
 
 I<floor_unit>() rounds the date I<down> to the earliest time for the
-current I<unit>.  For example, I<floor_month>() rounds to midnight of the
-first day of the current month, floor_day() to midnight of the current
-day, and I<floor_hour>() to xx:00:00.
+current I<unit>.  For example, I<floor_month>() rounds to midnight of
+the first day of the current month, floor_day() to midnight of the
+current day, and I<floor_hour>() to xx:00:00.
 
 I<ceil_unit>() is the complementary function to floor.  It rounds the
 date I<up>, to the earliest time in the I<next> unit.  E.g.,
@@ -2412,10 +2419,10 @@ This package is based on the DateTime package written by Greg Fast
 Date_WeekOfYear routine from the Date::DateManip package written by
 Sullivan Beck.
 
-Instead of using the string representation used in the original DateTime
-package, this package represents the time internally as a seven element
-array, where the elements correspond to the year, month, day, hours,
-minutes, seconds, and fractional seconds.
+Instead of using the string representation used in the original
+DateTime package, this package represents the time internally as a
+seven element array, where the elements correspond to the year, month,
+day, hours, minutes, seconds, and fractional seconds.
 
 =head1 AUTHOR
 
