@@ -42,7 +42,7 @@ use overload
 			   DateTime::Math::fcmp("$_[0]","$_[1]") },
     'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
     ;
-$VERSION = do {my @r=(q$Revision: 0.03 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
+$VERSION = do {my @r=(q$Revision: 0.04 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -394,15 +394,16 @@ sub DatetimeToInternal {
   # 1974.11.02
   # 1974/11/02
   # 1974.11.02 12:33:44.538
-  # 19741102123344538
-  # yyyymmddhhmmssff
+  # 19741102123344.538
+  # yyyymmddhhmmss.fff
 
   # The return array.
   my @ret = ();
 
   # Try to match different patterns.
   if ($in =~ /^\d{14}/) {
-    # Try to match for the large string yyyymmddhmmss.fff.
+    # Try to match for the large string yyyymmddhmmss.fff.  Remove any .'s.
+    $in =~ s:\.::g;
     my @a = unpack('a4a2a2a2a2a2a*', $in); # get components
     # If no time was given, then it's midnight.
     $a[6] = defined($a[6]) ? "0.$a[6]" : 0;
@@ -611,11 +612,21 @@ sub new {
     $self->set_gmtime_from_epoch_time;
   }
   elsif (@_ == 1) {
-    # Only one argument.  Parse it as a date string.
-    # DatetimeToInternal returns a reference to an array if it
-    # could parse the date, or undef.
-    @$self = DatetimeToInternal(shift);
-    @$self or return;
+    # If there is only one argument, it is either the Unix epoch time
+    # since or a date string.  If there are non-digit characters in the
+    # string or if the string is longer than 10 characters, then parse it
+    # using DatetimeToInternal, which returns a reference to an array if
+    # it could parse the date, or undef.  Because the Unix time will have
+    # only 10 digits for a very, very long time, this assumption should be
+    # safe.
+    my $arg = shift;
+    if ($arg =~ /\D/ or length($arg) > 10) {
+      @$self = DatetimeToInternal($arg);
+      @$self or return;
+    }
+    else {
+      $self->set_gmtime_from_epoch_time($arg);
+    }
   }
   elsif (@_ > 1) {
     $self->set_time(@_) or return;
@@ -1960,6 +1971,14 @@ L<set_time> for more information.  If the new fails, then new
 returns an empty list in a list context, an undefined value in
 a scalar context, or nothing in a void context.
 
+Because the second and third forms pass only one argument to new(),
+there must be a way of distinguishing them.  Currently the following
+test is used:  if any non-digit characters are found in the argument
+or if the string form of the argument is longer than 10 character, 
+then assume it to be a string to parse for the date.  Otherwise it is
+the time since the Unix epoch.  The string length of 10 was chosen since
+when the Unix epoch time flips to 11 digits, it'll be roughly year 2287.
+
 =back 4
 
 =head1 METHODS
@@ -1990,7 +2009,7 @@ time as returned from I<time>().  The newly set date/time object is returned.
 
 Set date/from from the year and the decimal day of the year.  Midnight
 January 1st is day 1, noon January 1st is 1.5, etc.  If the date was
-succesfully set, then the newly set date/time object is returned, otherwise
+successfully set, then the newly set date/time object is returned, otherwise
 it returns an empty list in a list context, an undefined value in a scalar
 context, or nothing in a void context.
 
@@ -2041,7 +2060,7 @@ context and the date and time remain unchanged.
 =item B<get_time> I<string>
 
 Return an array, where each element of the array corresponds to the
-correspodning I<strftime>() value.  This string should not contain %
+corresponding I<strftime>() value.  This string should not contain %
 characters.  This method is a much, much better and faster way of
 doing
     map {$self->strftime("%$_")} split(//, $string)
@@ -2086,7 +2105,7 @@ will return the fractional seconds.
 =item B<serial_day>
 
 Returns a serial day number representing the date, plus a fraction
-representing the time since midnight (ie, noon=0.5).  This is for
+representing the time since midnight (i.e., noon=0.5).  This is for
 applications which need an scale index (we use it for positioning
 a date on a time-series graph axis).  See also
 L<set_from_serial_day>().

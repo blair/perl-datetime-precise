@@ -1,3 +1,13 @@
+Thu Oct 22 09:11:09 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Fix a bug in new() where it wouldn't correctly set the time
+	using the one argument form of time.  This bug found by
+	Joe Pepin <joepepin@att.com>.
+
+	Fix some spelling mistakes.
+
+	Release 0.04.
+
 Sun Jun 28 11:56:40 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Add dscanf('%u') which loads GMT time into the object.  This is to
@@ -7,6 +17,8 @@ Sun Jun 28 11:56:40 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Change test #8 to use %u instead of %U so the test will succeed
 	in any timezone.
+
+	Release 0.03.
 
 Fri Jun 26 16:57:37 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 

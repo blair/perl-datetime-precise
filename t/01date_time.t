@@ -4,7 +4,7 @@
 use strict;
 use vars qw($loaded);
 
-BEGIN { $| = 1; print "1..197\n"; }
+BEGIN { $| = 1; print "1..203\n"; }
 END   { print "not ok 1\n" unless $loaded; }
 
 my $ok_count = 1;
@@ -127,7 +127,6 @@ $a = EmptySubclass->new("1997.12.13");
 ok( $a eq "19971213000000" );						#  26
 $a = EmptySubclass->new("19971210101010");
 ok( $a eq "19971210101010" );						#  27
-
 
 # tests 27-36 are Julian day tests.
 $a->set_from_day_of_year(1998, 1);
@@ -297,3 +296,12 @@ ok( $a->seconds ==   26.5 );						# 195
 # Test julian_day.
 ok( abs($a->day_of_year - $a->julian_day - 1) < 1/$Secs_per_day );	# 196
 ok( abs($a->julian_day - 176.38572337963)     < 1/$Secs_per_day );	# 197
+
+# Test the new() taking a Unix epoch time.
+$a = DateTime::Precise->new(1000000000);
+ok( $a->year    == 2001 );						# 198
+ok( $a->month   ==    9 );						# 199
+ok( $a->day     ==    9 );						# 200
+ok( $a->hours   ==    1 );						# 201
+ok( $a->minutes ==   46 );						# 202
+ok( $a->seconds ==   40 );						# 203

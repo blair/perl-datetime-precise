@@ -1,19 +1,19 @@
-Package DateTime::Precise version 0.03
+Package DateTime::Precise version 0.04
 
 This is the DateTime::Precise package.  This module provides for the
 representation and manipulation of (almost) arbitrary locations in
-time.
+time including fractional seconds.
 
-DateTime.pm is not intended to be a replacement for any of the
-existing Date:: or Time:: modules, but you may find it useful as a
+DateTime::Precise.pm is not intended to be a replacement for any of
+the existing Date:: or Time:: modules, but you may find it useful as a
 supplement.  Notable features:
 
   * Date and time can include fractional seconds.
 
   * Date is represented internally by an array of year, month, day,
-    hours, minutes, seconds, and fractions of seconds.  Using this
-    method, dates as far back as the start of the Gregorian
-    calendar) can be used.
+    hours, minutes, seconds, and fractional seconds.  Using this method,
+    dates as far back as the start of the Gregorian calendar) can be
+    used.
 
   * Methods are provided for doing date/time calculations.
     Increment and decrement, as well as round, floor and ceil
@@ -32,14 +32,19 @@ REQUIREMENTS
 
 AVAILABILITY
 
-The latest version of this package is available from a CPAN
-archive near you in CPAN/authors/id/B/BZ/BZAJAC/DateTime-Precise-0.03.tar.gz
-or from the author by contacting Blair Zajac <blair@gps.caltech.edu>.
+The latest version of this package is available for download from a CPAN
+(Comprehensive Perl Archive Network) site near your at
+
+        http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/
+
+or from my FTP site:
+
+        ftp://ftp.gps.caltech.edu/pub/blair/Perl/
 
 INSTALLATION
 
 In order to use this package you will need Perl version 5.004_04 or
-better.  Once that is completed, you install Proc::Generic as you
+better.  Once that is completed, you install DateTime::Precise as you
 would install any perl module library, by running these commands:
 
 	perl Makefile.PL
@@ -61,8 +66,19 @@ normally converted to manual pages end installed as part of the "make
 install" process.  You should also be able to use the 'perldoc'
 utility to extract documentation from the module files directly.
 
-COPYRIGHT
+IMPLEMENTATION
 
-Copyright (c) 1998 Blair Zajac. All rights reserved.  This package is
-free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
+This package is based on the DateTime package written by Greg Fast
+<gdfast@usgs.gov>.  The _week_of_year routine is based on the
+Date_WeekOfYear routine from the Date::DateManip package written by
+Sullivan Beck.
+
+Instead of using the string representation used in the original DateTime
+package, this package represents the time internally as a seven element
+array, where the elements correspond to the year, month, day, hours,
+minutes, seconds, and fractional seconds.
+
+AUTHOR, COMMENTS, AND BUGS
+
+I welcome all comments and bug reports.  Please email them to
+Blair Zajac <blair@gps.caltech.edu>.
