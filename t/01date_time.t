@@ -151,7 +151,7 @@ ok( $a eq "19960229000000" );						#  36
 $a->set_from_day_of_year(1996, 61);
 ok( $a eq "19960301000000" );						#  37
 
-$b = 366.56017361 + 0.2/$Secs_per_day;
+$b = 366.56017361 + 0.2/Secs_per_day;
 $a->set_from_day_of_year(1996, $b);
 $a->round_sec;
 ok( $a eq "19961231132639" );						#  38
@@ -161,7 +161,7 @@ ok( $a->day     == 31 );						#  41
 ok( $a->hours   == 13 );						#  42
 ok( $a->minutes == 26 );						#  43
 ok( $a->seconds == 39 );						#  44
-ok( abs($b - $a->day_of_year) < 1/$Secs_per_day );			#  45
+ok( abs($b - $a->day_of_year) < 1/Secs_per_day );			#  45
 
 $a->year(1876);  ok( $a eq "18761231132639" );				#  46
 $a->month(7);    ok( $a eq "18760731132639" );				#  47
@@ -299,8 +299,8 @@ ok( $a->minutes ==   15   );						# 195
 ok( $a->seconds ==   26.5 );						# 196
 
 # Test julian_day.
-ok( abs($a->day_of_year - $a->julian_day - 1) < 1/$Secs_per_day );	# 197
-ok( abs($a->julian_day - 176.38572337963)     < 1/$Secs_per_day );	# 198
+ok( abs($a->day_of_year - $a->julian_day - 1) < 1/Secs_per_day );	# 197
+ok( abs($a->julian_day - 176.38572337963)     < 1/Secs_per_day );	# 198
 
 # Test the new() taking a Unix epoch time.
 $a = DateTime::Precise->new(1000000000);

@@ -28,7 +28,7 @@ BEGIN {
   };
 }
 
-use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS
+use vars qw(@ISA @EXPORT_OK %EXPORT_TAGS
             $AUTOLOAD
             $VERSION
             $TZ @LC_AMPM
@@ -36,7 +36,6 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS
             $USGSMidnight
             $is_internal_format_re
             @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
-            $Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
             %_month_name
             $Days_per_5_months $Days_per_4_years $Days_per_400_years);
 
@@ -53,17 +52,17 @@ use overload
                  DateTime::Math::fcmp("$_[0]","$_[1]") },
   'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") };
 
-$VERSION   = sprintf '%d.%02d', '$Revision: 1.04 $' =~ /(\d+)\.(\d+)/;
+$VERSION   = sprintf '%d.%02d', '$Revision: 1.05 $' =~ /(\d+)\.(\d+)/;
 @ISA       = qw(Exporter);
-@EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
                 @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
-                $Secs_per_week $Secs_per_day $Secs_per_hour $Secs_per_minute
-                &JANUARY_1_1970 &JANUARY_6_1980);
+                &Secs_per_week &Secs_per_day &Secs_per_hour &Secs_per_minute
+                &JANUARY_1_1970 &JANUARY_6_1980
+                &IsLeapYear &DaysInMonth);
 %EXPORT_TAGS = (TimeVars => [qw(@MonthDays @MonthName @MonthAbbrev
                                 @WeekName @WeekAbbrev
-                                $Secs_per_week $Secs_per_day
-                                $Secs_per_hour $Secs_per_minute
+                                &Secs_per_week &Secs_per_day
+                                &Secs_per_hour &Secs_per_minute
                                 &JANUARY_1_1970 &JANUARY_6_1980)] );
 
 #
@@ -77,7 +76,7 @@ $is_internal_format_re = '^\d{14}(\.\d*)?$';
 # USGS, god knows why, likes midnight to be 24:00:00, not 00:00:00.
 # If $USGSMidnight is set to 1, dprintf will always print midnight as
 # 24:00:00.  Time is always stored internally as real midnight.
-$USGSMidnight = 1;
+$USGSMidnight = 0;
 
 # @MonthDays:   days per month, 1-indexed (0=dec, 13=jan).
 # @MonthName:   Names of months, one-indexed.
@@ -95,19 +94,19 @@ $USGSMidnight = 1;
 # Days_per_5_months: number of days in a five month block (mar-jul)
 # Days_per_4_years: number of days in a leap year cycle
 # Days_per_400_years: number of days in a *real* leap year cycle
-use constant SDN_Offset         =>  32045;
-use constant Days_per_5_months  =>    153;
-use constant Days_per_4_years   =>   1461;
-use constant Days_per_400_years => 146097;
+sub SDN_Offset         () {  32045; }
+sub Days_per_5_months  () {    153; }
+sub Days_per_4_years   () {   1461; }
+sub Days_per_400_years () { 146097; }
 
 # Secs_per_week: number of seconds in one week (7 days)
 # Secs_per_day: number of seconds in one day (24 hours)
 # Secs_per_hour: number of seconds in one hour
 # Secs_per_minute: number of seconds in one minute
-$Secs_per_week   = 604800;
-$Secs_per_day    =  86400;
-$Secs_per_hour   =   3600;
-$Secs_per_minute =     60;
+sub Secs_per_week   () { 604800; }
+sub Secs_per_day    () {  86400; }
+sub Secs_per_hour   () {   3600; }
+sub Secs_per_minute () {     60; }
 
 # There's no portable way to find the system default timezone, so
 # set it to GMT.
@@ -123,8 +122,9 @@ sub JANUARY_6_1980 () { DateTime::Precise->new('1980.01.06 00:00:00'); }
 sub MODIFIED_JULIAN_DAY () { 40587; }
 
 # These constants are used in the internal representation of the date
-# and time, which is an array.  The constant points to the location in
-# the array for the appropriate value.
+# and time, which is a reference to an array.  These constants are
+# indices into the appropriate location in the array to get the
+# particular portion of the date/time.
 sub YEAR     () { 0; }
 sub MONTH    () { 1; }
 sub DAY      () { 2; }
@@ -208,26 +208,22 @@ sub MASK_USES_MULTIPLIER () { 8; }
 );
 
 # These define the starting values for the different keys in SET_MASK.
-%SET_START_VALUE = (
-		    's' => 0,
-		    'W' => 0,
-		    'D' => 1,
-		    'd' => 0,
-		    'H' => 0,
-		    'M' => 0,
-		    'S' => 0,
-);
+%SET_START_VALUE = ('s' => 0,
+                    'W' => 0,
+                    'D' => 1,
+                    'd' => 0,
+                    'H' => 0,
+                    'M' => 0,
+                    'S' => 0);
 
 # These are the multipler from the key into seconds.
-%SET_MULTIPLER_VALUE = (
-			's' => 1,
-			'W' => $Secs_per_week,
-			'D' => $Secs_per_day,
-			'd' => $Secs_per_day,
-			'H' => $Secs_per_hour,
-			'M' => $Secs_per_minute,
-			'S' => 1,
-);
+%SET_MULTIPLER_VALUE = ('s' => 1,
+                        'W' => Secs_per_week,
+                        'D' => Secs_per_day,
+                        'd' => Secs_per_day,
+                        'H' => Secs_per_hour,
+                        'M' => Secs_per_minute,
+                        'S' => 1);
 
 #----------------------------------------
 # ARG1 $year: year
@@ -259,13 +255,15 @@ sub DaysInMonth {
 
 #----------------------------------------
 # NOTES: fix to 24:00:00 midnight.
-# RETVAL: object
+# RETVAL: 1 if the date was modified, 0 otherwise
 # ACCESS: method
 sub USGSDumbMidnightFix {
   my $self = shift;
+  my $modified_date = 0;
   $self->_FixDate;
   if ($self->[FRACTION] == 0 && $self->[SECOND] == 0 &&
       $self->[MINUTE]   == 0 && $self->[HOUR]   == 0) {
+    $modified_date = 1;
     $self->[HOUR] = '24';
     $self->[DAY]--;
     if ($self->[DAY] < 1) {
@@ -277,7 +275,7 @@ sub USGSDumbMidnightFix {
       }
     }
   }
-  $self;
+  $modified_date;
 }
 # USGSDumbMidnightFix
 
@@ -329,6 +327,7 @@ sub _FixDate {
     $self->[SECOND]   = $second;
     $self->[FRACTION] = $fraction;
   }
+
   # Fix seconds.
   while ($self->[SECOND] > 59) {
     $self->[SECOND] -= 60;
@@ -338,6 +337,7 @@ sub _FixDate {
     $self->[SECOND] += 60;
     $self->[MINUTE]--;
   }
+
   # Fix minutes.
   while ($self->[MINUTE] > 59) {
     $self->[MINUTE] -= 60;
@@ -347,6 +347,7 @@ sub _FixDate {
     $self->[MINUTE] += 60;
     $self->[HOUR]--;
   }
+
   # Fix hours.
   while ($self->[HOUR] > 23) {
     $self->[HOUR] -= 24;
@@ -361,7 +362,7 @@ sub _FixDate {
   # number of days in the month is not constant and we're using a
   # function to calculate the number of days in the month, be careful.
   # Go into a loop, fix the month first, then fix the days.  If
-  # anything get's fixed, redo the loop.
+  # anything gets fixed, redo the loop.
     FIX_DAY_MONTH:
   {
     # Fix months.
@@ -373,6 +374,7 @@ sub _FixDate {
       $self->[MONTH] += 12;
       $self->[YEAR]--;
     }
+
     # Fix days.
     if ($self->[DAY] > DaysInMonth($self->[MONTH], $self->[YEAR])) {
       $self->[DAY] -= DaysInMonth($self->[MONTH], $self->[YEAR]);
@@ -472,7 +474,7 @@ sub HMSToFraction {
   $s += 60*($m+60*$h);
   # Now take into account high precision math.
   $s = DateTime::Math::fadd($s, $fs);
-  DateTime::Math::fdiv($s, $Secs_per_day);
+  DateTime::Math::fdiv($s, Secs_per_day);
 }
 
 #----------------------------------------
@@ -526,16 +528,16 @@ sub SecsSinceMidnight {
 # RETVAL:   SDN
 # ACCESS:   private nonmethod
 sub DayToSDN {
-  my($y,$mo,$d) = @_;
+  my ($y, $mo, $d) = @_;
   # NOTES: This is internal, so I assume all inputs are valid.  Caveat felis.
 
   # Make the year positive.
   $y += 4800 + ($y<0);
   # Adjust to nice start of year.
-  if ($mo>2) {
-    $mo-=3;
+  if ($mo > 2) {
+    $mo -= 3;
   } else {
-    $mo+=9;
+    $mo += 9;
     $y--;
   }
 
@@ -555,27 +557,27 @@ sub DayToSDN {
 # ACCESS: private nonmethod
 sub SDNToDay {
   my $sdn = shift;
-  my ($temp, $cent, $doy, $y, $m, $d);
+
   # A mass of confused calculations.
   use integer;
-  $temp = ($sdn+SDN_Offset)*4-1;
-  $cent = $temp/Days_per_400_years;
-  $temp = (($temp%Days_per_400_years) / 4) * 4 + 3;
-  $y    = ($cent*100)+($temp/Days_per_4_years);
-  $doy  = ($temp%Days_per_4_years)/4+1;
-  $temp = $doy*5-3;
-  $m    = $temp/Days_per_5_months;
-  $d    = ($temp%Days_per_5_months)/5+1;
+  my $temp = ($sdn+SDN_Offset)*4-1;
+  my $cent = $temp/Days_per_400_years;
+  $temp    = (($temp%Days_per_400_years) / 4) * 4 + 3;
+  my $y    = ($cent*100)+($temp/Days_per_4_years);
+  my $doy  = ($temp%Days_per_4_years)/4+1;
+  $temp    = $doy*5-3;
+  my $m    = $temp/Days_per_5_months;
+  my $d    = ($temp%Days_per_5_months)/5+1;
   # Convert to a real date.
-  if ($m<10) {
-    $m+=3;
+  if ($m < 10) {
+    $m += 3;
   } else {
-    $m-=9;
+    $m -= 9;
     $y++;
   }
-  $y-=4800;
-  $y-- if ($y<=0);
-  ($y,$m,$d);
+  $y -= 4800;
+  $y-- if ($y <= 0);
+  ($y, $m, $d);
 }
 # SDNToDay
 
@@ -659,9 +661,9 @@ sub gps_seconds_since_epoch {
 sub gps_week_seconds_day {
   my $self          = shift;
   my $epoch_seconds = $self->gps_seconds_since_epoch;
-  my $week          = int($epoch_seconds/$Secs_per_week);
-  my $seconds       = $epoch_seconds - $week*$Secs_per_week;
-  my $day           = int($seconds/$Secs_per_day);
+  my $week          = int($epoch_seconds/Secs_per_week);
+  my $seconds       = $epoch_seconds - $week*Secs_per_week;
+  my $day           = int($seconds/Secs_per_day);
   ($week, $seconds, $day);
 }
 
@@ -701,7 +703,7 @@ sub strftime {
   # other characters.
   $template =~ s/%%/\200/g;
   my %strftime_values = %{$self->_strftime_values};
-  while ( my ($key, $value) = each %strftime_values ) {
+  while (my ($key, $value) = each %strftime_values) {
     $template =~ s/%$key/$value/g;
   }
   $template =~ s/\200/%/g;
@@ -773,13 +775,13 @@ sub set_time {
 	$work->hours(0);
 	$work->minutes(0);
 	$work->seconds(0);
-	$work->addSec($partial * $Secs_per_day *
-		      (DateTime::Precise::IsLeapYear($arg) ? 366 : 365));
+	$work->addSec($partial * Secs_per_day *
+		      (IsLeapYear($arg) ? 366 : 365));
 	next;
       };
       # Set time to modified fractional year.
       $key eq 'J' and do {
-        my $time = ($arg + MODIFIED_JULIAN_DAY + $partial) * $Secs_per_day;
+        my $time = ($arg + MODIFIED_JULIAN_DAY + $partial) * Secs_per_day;
         $work->set_gmtime_from_unix_epoch($time);
         next;
       };
@@ -811,8 +813,7 @@ sub set_time {
 }
 
 sub get_time {
-  my $self     = shift;
-  my $template = shift;
+  my ($self, $template) = @_;
 
   # For each conversion, add one more value to an output array
   # containing the requested value.
@@ -830,11 +831,7 @@ sub get_time {
 # standard that January 4th is in week1.  Set the last two options to
 # be true to get the %V behavior for strftime.
 sub _week_of_year {
-  my $doy        = shift;
-  my $year       = shift;
-  my $week_begin = shift;
-  my $previous   = shift;
-  my $jan4week1  = shift;
+  my ($doy, $year, $week_begin, $previous, $jan4week1) = @_;
 
   # Calculate the day of the week for January 1.
   my $dow = DateTime::Precise->new("$year 1 1")->weekday;
@@ -1037,8 +1034,7 @@ sub copy {
 # ACCESS: method
 # EXAMPLE: print $dt->internal('19980325202530'), " compressed\n";
 sub internal {
-  my $self = shift;
-  my $in   = shift;
+  my ($self, $in) = @_;
   if ($in) {
     my @a = InternalStringToInternal($in);
     @$self = @a if @a;
@@ -1057,9 +1053,7 @@ sub internal {
 # RETVAL: nothing in a void context.
 # EXAMPLE: $dt->set_from_datetime("1998.03.23 16:58:11");
 sub set_from_datetime {
-  my $self = shift;
-  my $dt   = shift;
-  my $ret  = undef;
+  my ($self, $dt, $ret) = @_;
   if (defined $dt) {
     my @a = DatetimeToInternal($dt);
     if (@a) {
@@ -1391,39 +1385,57 @@ sub seconds {
 sub dprintf {
   my $self = shift;
   my $form = shift;
-  my @form = split(//,$form);	# make a list of all the chars in the format
-  $self->USGSDumbMidnightFix if $USGSMidnight;
-  my($y,$mo,$d,$h,$m,$s) = @$self[YEAR,MONTH,DAY,HOUR,MINUTE,SECOND];
-  my($mod,$char,$type,$field,@retn);
 
-  # We shouldn't ever store in non-usgs midnight.  Check each char in
-  # the format for formatting
+  # Fix the date if the special USGS midnight treatment needs to be
+  # applied.
+  my $usgs_midnight_fix_applied = 0;
+  if ($USGSMidnight) {
+    $usgs_midnight_fix_applied = $self->USGSDumbMidnightFix;
+  }
+
+  my @form = split(//,$form);	# make a list of all the chars in the format
+  my ($y, $mo, $d, $h, $m, $s) = @$self[YEAR,MONTH,DAY,HOUR,MINUTE,SECOND];
+  my @retn;
+
+  # We shouldn't ever store in non-USGS midnight.  Check each char in
+  # the format for formatting.
   while (@form) {
-    $char = shift(@form);
+    my $char = shift(@form);
     if ($char eq '%') {	# found a format
-      $field = '';
       # the second char...  mod becomes the formatting char (~^*-)
-      $mod = shift(@form);
+      my $mod = shift(@form);
       if ($mod eq '%') {	     # %%
 	# only push one '%'
 	push(@retn, '%');
       } else {
 	# $type is the letter (field specifier)
-	$type = $mod;		
+	my $type = $mod;		
 	$type = shift(@form) unless ($mod=~/[a-zA-Z]/);
 	# put the value to push into $field
-	($field = $s) if ($type eq 's');
-	($field = $m) if ($type eq 'm');
-	($field = $h) if ($type eq 'h');
-	($field = $d) if ($type eq 'D');
-	($field = $mo) if ($type eq 'M');
-	($field = $y) if ($type eq 'Y');
-	if ($type eq 'W') { # water year
-	  $field = $y;
+        my $field = '';
+        if ($type eq 's') {
+          $field = $s;
+        } elsif ($type eq 'm') {
+          $field = $m;
+        } elsif ($type eq 'h') {
+          $field = $h;
+        } elsif ($type eq 'D') {
+          $field = $d;
+        } elsif ($type eq 'M') {
+          $field = $mo;
+        } elsif ($type eq 'Y') {
+          $field = $y;
+        } elsif ($type eq 'W') {
+          # This is water year.
+          $field = $y;
 	  $field++ if ($mo > 9);
-	}
-	($field = $self->weekday) if ($type eq 'w');
-	(($mod,$field) = ('^',"$self")) if ($type eq 'E');
+        } elsif ($type eq 'w') {
+          $field = $self->weekday;
+        } elsif ($type eq 'E') {
+          $mod   = '^';
+          $field = "$self";
+        }
+
 	# Push an approprite char onto the return stack.
 	if ($mod eq '*') { # %*
 	  push(@retn, $MonthName[$field]) if ($type eq 'M');
@@ -1445,6 +1457,12 @@ sub dprintf {
       push(@retn, $char);
     }
   }
+
+  # If the USGS midnight fix was applied to the date, then undo it.
+  if ($usgs_midnight_fix_applied) {
+    $self->_FixDate;
+  }
+  
   return join('', @retn);
 }
 # dprintf
@@ -1772,11 +1790,11 @@ sub diff {
   my @bot = (DayToSDN(@$other), SecsSinceMidnight(@$other[HOUR..FRACTION]));
   # Carry the seconds if need be.
   if ($bot[1] > $top[1]) {
-    $top[1] = DateTime::Math::fadd($top[1], $Secs_per_day);
+    $top[1] = DateTime::Math::fadd($top[1], Secs_per_day);
     $top[0]--;
   }
   # Subtract and return seconds.
-  my $diff = ($top[0] - $bot[0])*$Secs_per_day;
+  my $diff = ($top[0] - $bot[0])*Secs_per_day;
   $diff = DateTime::Math::fadd($diff, DateTime::Math::fsub($top[1], $bot[1]));
   if ($neg) {
     $diff = DateTime::Math::fneg($diff);
@@ -1962,10 +1980,12 @@ handles seconds and fractions of seconds, subtraction handles seconds
 or date differences, compares work, and stringification returns the a
 representation of the date.
 
-The US Geological Survey (USGS), likes midnight to be 24:00:00, not
-00:00:00.  If $DateTime::Precise::USGSMidnight is set, dprintf will
-always print midnight as 24:00:00.  Regardless, time is always stored
-internally as 00:00:00.
+The US Geological Survey (USGS) likes midnight to be 24:00:00 of the
+previous day, not 00:00:00 of the day people expect.  If
+$DateTime::Precise::USGSMidnight is set, dprintf will always print
+midnight as 24:00:00 and the date returned from dprintf will have the
+previous day's date.  Regardless, time is always stored internally as
+00:00:00.
 
 =head1 CONSTRUCTOR
 
@@ -2217,6 +2237,13 @@ string of '%^Y.%M.%D %h:%m:%s', or, to get a ctime-like string, you
 would pass: C<'%~w %~M %-D %h:%m:%s CDT %^Y'> (presuming you're in the
 CDT.  Maybe timezone support will show up some day).
 
+The US Geological Survey (USGS) likes midnight to be 24:00:00 of the
+previous day, not 00:00:00 of the day people expect.  If
+$DateTime::Precise::USGSMidnight is set, dprintf will always print
+midnight as 24:00:00 and the date returned from dprintf will have the
+previous day's date.  Regardless, time is always stored internally as
+00:00:00.
+
 =item B<dscanf> I<format> I<string>
 
 Takes a format string I<format>, and use it to read the date and time
@@ -2371,7 +2398,14 @@ name, such as $DateTime::Precise::USGSMidnight.
 =item B<$USGSMidnight>
 
 Set this to 1 if you want midnight represented as 24:00:00 of the
-previous day.  To use this variable in your
+previous day.  The default value is 0 which does not change the
+behavior of midnight.  To use this variable in your code, load the
+DateTime::Precise module like this:
+
+    use DateTime::Precise qw($USGSMidnight);
+
+Setting this only changes the output of dprintf for date and times
+that are exactly midnight.
 
 =item B<@MonthDays>
 
@@ -2396,19 +2430,19 @@ Names of the week, 0 indexed.  So 0 is Sunday, 1 is Monday, etc.
 
 Abbreviated names of the week, 0 indexed.  So 0 is Sun, 1 is Mon, etc.
 
-=item B<$Secs_per_week>
+=item B<&Secs_per_week>
 
 The number of seconds in one week (604800).
 
-=item B<$Secs_per_day>
+=item B<&Secs_per_day>
 
 The number of seconds in one day (86400).
 
-=item B<$Secs_per_hour>
+=item B<&Secs_per_hour>
 
 The number of seconds in one hour (3600).
 
-=item B<$Secs_per_minute>
+=item B<&Secs_per_minute>
 
 The number of seconds in one minute (60).
 
@@ -2449,6 +2483,7 @@ day, hours, minutes, seconds, and fractional seconds.
 =head1 AUTHOR
 
 Contact: Blair Zajac <blair@orcaware.com>.  The original version of
-this was was based on DateTime written by Greg Fast <gdfast@usgs.gov>.
+this module was based on DateTime written by Greg Fast
+<gdfast@usgs.gov>.
 
 =cut
