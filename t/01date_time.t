@@ -4,7 +4,7 @@
 use strict;
 use vars qw($loaded);
 
-BEGIN { $| = 1; print "1..195\n"; }
+BEGIN { $| = 1; print "1..197\n"; }
 END   { print "not ok 1\n" unless $loaded; }
 
 my $ok_count = 1;
@@ -24,7 +24,7 @@ package main;
 
 # If we got here, then the package being tested was loaded.
 $loaded = 1;
-ok(1);									# 1
+ok(1);									#   1
 
 sub Print {
   my $msg = shift;
@@ -40,49 +40,49 @@ my $form = "time %h:%m:%s  date %D.%M.%^Y";
 # the %s is just tossed, not saved
 # dscanf shouldn't print anything, unless there's an error.
 Print $a->dscanf("%c %~M %D %h:%m:%s %Y",  "Fri Jun  6 12:55:44 1997");
-ok( $a->dprintf($form) eq "time 12:55:44  date 06.06.1997" );		# 2
+ok( $a->dprintf($form) eq "time 12:55:44  date 06.06.1997" );		#   2
 
 Print $a->dscanf("%Y/%M/%D %h:%m:%s", " 1997/04/29 22:45:51 ");
-ok( $a->dprintf($form) eq "time 22:45:51  date 29.04.1997" );		# 3
+ok( $a->dprintf($form) eq "time 22:45:51  date 29.04.1997" );		#   3
 
 Print $a->dscanf("%c %~M %D %h:%m:%s %c %Y", "Mon Jul 28 20:44:11 CDT 1997");
-ok( $a->dprintf($form) eq "time 20:44:11  date 28.07.1997" );		# 4
+ok( $a->dprintf($form) eq "time 20:44:11  date 28.07.1997" );		#   4
 
 # the strings can be specified, or left vague (as %c)
 my $x = "*** leibniz.er.usgs.gov Monday July 28 1997 -- 20: 47 -43:00   ";
 Print $a->dscanf("*** %c %c %*M %D %Y -- %h: %m %c", $x);
-ok( $a->dprintf($form) eq "time 20:47:00  date 28.07.1997" );		# 5
+ok( $a->dprintf($form) eq "time 20:47:00  date 28.07.1997" );		#   5
 
 # %p =~ /[a|p]m?/
 Print $a->dscanf("%M.%D.%Y @ %h:%m%p", "12.3.97 @ 12:30a");
-ok( $a->dprintf($form) eq "time 00:30:00  date 03.12.1997" );		# 6
+ok( $a->dprintf($form) eq "time 00:30:00  date 03.12.1997" );		#   6
 
 Print $a->dscanf("%4Y%2M%2D%2h%2m%2s", "19971225101112");
-ok( $a->dprintf($form) eq "time 10:11:12  date 25.12.1997" );		# 7
+ok( $a->dprintf($form) eq "time 10:11:12  date 25.12.1997" );		#   7
 
-Print $a->dscanf("%U", "870310593"); # unix epochtime
-ok( $a->dprintf($form) eq "time 17:56:33  date 30.07.1997" );		# 8
+Print $a->dscanf("%u", "870310593"); # Unix GMT epochtime
+ok( $a->dprintf($form) eq "time 00:56:33  date 31.07.1997" );		#   8
 
 # tests 9-14 are various function tests
 
 # new DateTime::Precise from datetime format
 $a = EmptySubclass->new('1974.11.02 12:33:44');
-ok( $a->internal eq "19741102123344" );					# 9
+ok( $a->internal eq "19741102123344" );					#   9
 
 # new DateTime::Precise from internal format
 $a = EmptySubclass->new('19741102123344');
-ok( $a->internal eq "19741102123344" );					# 10
+ok( $a->internal eq "19741102123344" );					#  10
 
 # new from nothing
 $a = EmptySubclass->new();
-ok( $a->internal() );							# 11
+ok( $a->internal() );							#  11
 
 $a->set_from_datetime('1974.11.02 12:33:44');
-ok( $a->internal eq "19741102123344" );					# 12
+ok( $a->internal eq "19741102123344" );					#  12
 
 my $b = EmptySubclass->new();
 $b->set_from_serial_day( $a->serial_day() );
-ok( $a->internal() - $b->internal() == 0 );				# 13
+ok( $a->internal() - $b->internal() == 0 );				#  13
 
 $a->set_localtime_from_epoch_time($^T);
 ok( $a->dprintf("%~w %~M %-D %h:%m:%s %^Y") eq scalar(localtime($^T)) ); # 14
@@ -93,87 +93,87 @@ $a->set_from_datetime('1974.11.02 12:33:44');
 $b->set_from_datetime('1997.05.01 00:00:00');
 
 # op-op tests
-ok( $a < $b );								# 15
-ok( !($a==$b) );							# 16
+ok( $a < $b );								#  15
+ok( !($a==$b) );							#  16
 
 # test subtraction
-ok( $b-$a==709817176 );							# 17
-ok( $a-$b==-709817176 );						# 18
+ok( $b-$a==709817176 );							#  17
+ok( $a-$b==-709817176 );						#  18
 
 # op-num compares
-ok( "$a" > 251 );							# 19
+ok( "$a" > 251 );							#  19
 
 # addition
 $a+=10;
 
 # cmps vs strings and numerics (and see if the add worked)
-ok( $a eq "19741102123354" );						# 20
-ok( 19741102123354==$a );						# 21
+ok( $a eq "19741102123354" );						#  20
+ok( 19741102123354==$a );						#  21
 
 # test stringification some
 $b->internal( $a );
-ok( $a==$b );								# 22
-ok( $a eq $b );								# 23
+ok( $a==$b );								#  22
+ok( $a eq $b );								#  23
 
 # skipping inc/dec, floor/ciel ops, mostly
 $a = EmptySubclass->new("1997.09.01 00:15:33");
 $a-=(3*3600);
-ok( $a eq "19970831211533" );						# 24
+ok( $a eq "19970831211533" );						#  24
 
 # tests 24-26 are new() tests (yeah, they should be at the top :)
 $a = EmptySubclass->new("1997.12.25 12:01:33");
-ok( $a eq "19971225120133" );						# 25
+ok( $a eq "19971225120133" );						#  25
 $a = EmptySubclass->new("1997.12.13");
-ok( $a eq "19971213000000" );						# 26
+ok( $a eq "19971213000000" );						#  26
 $a = EmptySubclass->new("19971210101010");
-ok( $a eq "19971210101010" );						# 27
+ok( $a eq "19971210101010" );						#  27
 
 
 # tests 27-36 are Julian day tests.
 $a->set_from_day_of_year(1998, 1);
-ok( $a eq "19980101000000" );						# 28
-ok( $a->day_of_year == 1 );						# 29
+ok( $a eq "19980101000000" );						#  28
+ok( $a->day_of_year == 1 );						#  29
 $a->set_from_day_of_year(1998, 1.5);
-ok( $a eq "19980101120000" );						# 30
+ok( $a eq "19980101120000" );						#  30
 $a->set_from_day_of_year(1998, 32);
-ok( $a eq "19980201000000" );						# 31
+ok( $a eq "19980201000000" );						#  31
 $a->set_from_day_of_year(1998, 59);
-ok( $a eq "19980228000000" );						# 32
+ok( $a eq "19980228000000" );						#  32
 $a->set_from_day_of_year(1998, 60);
-ok( $a eq "19980301000000" );						# 33
+ok( $a eq "19980301000000" );						#  33
 $a->set_from_day_of_year(1998, 365);
-ok( $a eq "19981231000000" );						# 34
+ok( $a eq "19981231000000" );						#  34
 $a->set_from_day_of_year(1996, 59);
-ok( $a eq "19960228000000" );						# 35
+ok( $a eq "19960228000000" );						#  35
 $a->set_from_day_of_year(1996, 60);
-ok( $a eq "19960229000000" );						# 36
+ok( $a eq "19960229000000" );						#  36
 $a->set_from_day_of_year(1996, 61);
-ok( $a eq "19960301000000" );						# 37
+ok( $a eq "19960301000000" );						#  37
 
 $b = 366.56017361 + 0.2/$Secs_per_day;
 $a->set_from_day_of_year(1996, $b);
 $a->round_sec;
-ok( $a eq "19961231132639" );						# 38
-ok( $a->year    == 1996 );						# 39
-ok( $a->month   == 12 );						# 40
-ok( $a->day     == 31 );						# 41
-ok( $a->hours   == 13 );						# 42
-ok( $a->minutes == 26 );						# 43
-ok( $a->seconds == 39 );						# 44
-ok( abs($b - $a->day_of_year) < 1/$Secs_per_day );			# 45
+ok( $a eq "19961231132639" );						#  38
+ok( $a->year    == 1996 );						#  39
+ok( $a->month   == 12 );						#  40
+ok( $a->day     == 31 );						#  41
+ok( $a->hours   == 13 );						#  42
+ok( $a->minutes == 26 );						#  43
+ok( $a->seconds == 39 );						#  44
+ok( abs($b - $a->day_of_year) < 1/$Secs_per_day );			#  45
 
-$a->year(1876);  ok( $a eq "18761231132639" );				# 46
-$a->month(7);    ok( $a eq "18760731132639" );				# 47
-$a->day(13);     ok( $a eq "18760713132639" );				# 48
-$a->hours(1);	 ok( $a eq "18760713012639" );				# 49
-$a->minutes(49); ok( $a eq "18760713014939" );				# 50
-$a->seconds(2);  ok( $a eq "18760713014902" );				# 51
+$a->year(1876);  ok( $a eq "18761231132639" );				#  46
+$a->month(7);    ok( $a eq "18760731132639" );				#  47
+$a->day(13);     ok( $a eq "18760713132639" );				#  48
+$a->hours(1);	 ok( $a eq "18760713012639" );				#  49
+$a->minutes(49); ok( $a eq "18760713014939" );				#  50
+$a->seconds(2);  ok( $a eq "18760713014902" );				#  51
 
 $b = EmptySubclass->new();
 foreach my $sec (0..60) {
   $a->seconds($sec);
   $b->set_from_serial_day( $a->serial_day() );
-  ok( $a->internal() - $b->internal() == 0 );				# 52-112
+  ok( $a->internal() - $b->internal() == 0 );				#  52-112
 }
 
 my $now = time;
@@ -219,19 +219,19 @@ ok( EmptySubclass->new('1998 1  9')->_strftime_values->{'U'} eq '01' );	# 148
 ok( EmptySubclass->new('1998 1 10')->_strftime_values->{'U'} eq '01' );	# 149
 ok( EmptySubclass->new('1998 1 11')->_strftime_values->{'U'} eq '02' );	# 150
 ok( EmptySubclass->new('1998 1 12')->_strftime_values->{'U'} eq '02' );	# 151
-ok( $values{'V'} == 14);							# 152
+ok( $values{'V'} == 14);						# 152
 ok( EmptySubclass->new('1993 1  1')->_strftime_values->{'V'} eq '53' );	# 153
 ok( EmptySubclass->new('1993 1  2')->_strftime_values->{'V'} eq '53' );	# 154
 ok( EmptySubclass->new('1993 1  3')->_strftime_values->{'V'} eq '53' );	# 155
 ok( EmptySubclass->new('1993 1  4')->_strftime_values->{'V'} eq '01' );	# 156
 ok( $values{'w'} == 5);							# 157
-ok( $values{'W'} == 13);							# 158
+ok( $values{'W'} == 13);						# 158
 ok( EmptySubclass->new('1998 1  9')->_strftime_values->{'W'} eq '01' );	# 159
 ok( EmptySubclass->new('1998 1 10')->_strftime_values->{'W'} eq '01' );	# 160
 ok( EmptySubclass->new('1998 1 11')->_strftime_values->{'W'} eq '01' );	# 161
 ok( EmptySubclass->new('1998 1 12')->_strftime_values->{'W'} eq '02' );	# 162
-ok( $values{'x'} eq '04/03/98' );						# 163
-ok( $values{'X'} eq '05:06:07' );						# 164
+ok( $values{'x'} eq '04/03/98' );					# 163
+ok( $values{'X'} eq '05:06:07' );					# 164
 ok( $values{'y'} eq '98' );						# 165
 ok( $values{'Y'} eq '1998' );						# 166
 ok( $values{'Z'} eq 'GMT' );						# 167
@@ -293,3 +293,7 @@ ok( $a->day     ==   26   );						# 192
 ok( $a->hours   ==    9   );						# 193
 ok( $a->minutes ==   15   );						# 194
 ok( $a->seconds ==   26.5 );						# 195
+
+# Test julian_day.
+ok( abs($a->day_of_year - $a->julian_day - 1) < 1/$Secs_per_day );	# 196
+ok( abs($a->julian_day - 176.38572337963)     < 1/$Secs_per_day );	# 197

@@ -42,7 +42,7 @@ use overload
 			   DateTime::Math::fcmp("$_[0]","$_[1]") },
     'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
     ;
-$VERSION = do {my @r=(q$Revision: 0.02 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
+$VERSION = do {my @r=(q$Revision: 0.03 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -1244,6 +1244,16 @@ sub day_of_year {
 # day_of_year
 
 #----------------------------------------
+# NOTES: Return the Julian day of the year including the fraction of
+# NOTES: the day.
+# ACCESS: method
+# EXAMPLE: $j = $dt->julian_day;
+sub julian_day {
+  DateTime::Math::fsub(shift->day_of_year, 1);
+}
+# julian_day
+
+#----------------------------------------
 # NOTES: Return the year and optionally set it.
 # ACCESS: method
 # EXAMPLE: my $year = $dt->year(); $dt->year(1988);
@@ -1526,6 +1536,8 @@ sub dscanf {
   # put things in the right place
   if (exists $tags{'U'}) {
     $self->set_localtime_from_epoch_time($tags{U});
+  } elsif (exists $tags{'u'}) {
+    $self->set_gmtime_from_epoch_time($tags{u});
   } elsif (exists $tags{'E'}) {
     return 'bad %E format' unless ($tags{'E'} =~ /^\d{14}$/);
     my @a = DatetimeToInternal($tags{'E'});
@@ -2084,6 +2096,12 @@ L<set_from_serial_day>().
 Return the day of the year including the fraction part of the day.
 Midnight January 1st is day 1, noon January 1st is 1.5, etc.
 
+=item B<julian_day>
+
+Return the day of the year including the fraction part of the day
+where time is 0 based.  Midnight January 1st is day 0, noon January
+1st is 0.5, noon January 2nd is 1.5, etc.
+
 =item B<unix_seconds_since_epoch>
 
 Return the time in seconds between the object and January 1, 1970 UTC.
@@ -2155,9 +2173,13 @@ Takes a format string I<format>, and use it to read the date and time
 fields from the supplied I<string>.  The current date and time is
 unchanged if I<dscanf>() fails.
 
-All format characters recognized by L<dprintf>() are valid.  Unless
-exact characters are supplied or format characters are
-concatenated, will separate on non-matching chars.
+All format characters recognized by L<dprintf>() are valid.  Two
+additional characters are recognized, 'U' which sets the time to
+the local time/date using the number of seconds since Unix epoch
+time and 'u' which sets the time to GMT time/date using the number
+of seconds since Unix epoch time.  Unless exact characters are supplied
+or format characters are concatenated, will separate on non-matching
+characters.
 
 =item B<strftime> I<format>
 

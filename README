@@ -1,4 +1,4 @@
-Package DateTime::Precise version 0.02
+Package DateTime::Precise version 0.03
 
 This is the DateTime::Precise package.  This module provides for the
 representation and manipulation of (almost) arbitrary locations in
@@ -33,7 +33,7 @@ REQUIREMENTS
 AVAILABILITY
 
 The latest version of this package is available from a CPAN
-archive near you in CPAN/authors/id/B/BZ/BZAJAC/DateTime-Precise-0.02.tar.gz
+archive near you in CPAN/authors/id/B/BZ/BZAJAC/DateTime-Precise-0.03.tar.gz
 or from the author by contacting Blair Zajac <blair@gps.caltech.edu>.
 
 INSTALLATION

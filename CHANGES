@@ -1,3 +1,17 @@
+Sun Jun 28 11:56:40 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Add dscanf('%u') which loads GMT time into the object.  This is to
+	complement dscanf('%U') which loads local time into the object.
+
+	Update the POD to reflect the change in dscanf.
+
+	Change test #8 to use %u instead of %U so the test will succeed
+	in any timezone.
+
+Fri Jun 26 16:57:37 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Add a new jday() method that returns day_of_year() - 1.
+
 Fri Jun 26 15:06:52 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	New() didn't properly initialize the underlying representation
