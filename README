@@ -1,4 +1,4 @@
-DateTime::Precise version 0.01
+Package DateTime::Precise version 0.02
 
 This is the DateTime::Precise package.  This module provides for the
 representation and manipulation of (almost) arbitrary locations in
@@ -26,10 +26,15 @@ supplement.  Notable features:
 This module is based on the DateTime module written by Greg Fast
 (gdfast@usgs.gov).
 
+REQUIREMENTS
+
+   * Perl 5.004_04 or greater.
+
 AVAILABILITY
 
-The latest version of this package is available from the author by
-contacting Blair Zajac <blair@gps.caltech.edu>.
+The latest version of this package is available from a CPAN
+archive near you in CPAN/authors/id/B/BZ/BZAJAC/DateTime-Precise-0.02.tar.gz
+or from the author by contacting Blair Zajac <blair@gps.caltech.edu>.
 
 INSTALLATION
 

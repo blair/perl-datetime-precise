@@ -4,7 +4,7 @@
 use strict;
 use vars qw($loaded);
 
-BEGIN { $| = 1; print "1..179\n"; }
+BEGIN { $| = 1; print "1..195\n"; }
 END   { print "not ok 1\n" unless $loaded; }
 
 my $ok_count = 1;
@@ -20,7 +20,6 @@ package EmptySubclass;
 use vars qw(@ISA);
 use DateTime::Precise;
 @ISA = qw(DateTime::Precise);
-
 package main;
 
 # If we got here, then the package being tested was loaded.
@@ -264,3 +263,33 @@ my ($gps_week, $gps_seconds) = $a->gps_week_seconds_day;
 $a->clone(JANUARY_1_1970);
 $a->set_from_gps_week_seconds($gps_week, $gps_seconds);
 ok( $a == $b );								# 179
+
+# Test the comparisons of fractional times.
+$a = EmptySubclass->new;
+$b = $a->new;
+$b->clone($a);
+$b += 0.3333333333;
+ok( $a != $b );								# 180
+ok( $a < $b );								# 181
+ok( $b > $a );								# 182
+ok( $a ne $b );								# 183
+ok( $a le $b );								# 184
+ok( $b ge $a );								# 185
+
+# Test the copy method.
+$a->clone(JANUARY_1_1970);
+$b->clone(JANUARY_6_1980);
+ok( $a != $b );								# 186
+ok( $a ne $b );								# 187
+$b = $a->copy;
+ok( $a == $b );								# 188
+ok( $a eq $b );								# 189
+
+# Test the new method that uses set_time.
+$a = DateTime::Precise->new('YDHMS', 1998, 177, 9, 15, 26.5);
+ok( $a->year    == 1998   );						# 190
+ok( $a->month   ==    6   );						# 191
+ok( $a->day     ==   26   );						# 192
+ok( $a->hours   ==    9   );						# 193
+ok( $a->minutes ==   15   );						# 194
+ok( $a->seconds ==   26.5 );						# 195

@@ -1,3 +1,30 @@
+Fri Jun 26 15:06:52 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	New() didn't properly initialize the underlying representation
+	of DateTime::Precise before it was passed off to set_time().
+	Add a new test to cover this case.
+
+	Update the POD a little.
+
+	Release version 0.02.
+
+Mon Jun 22 13:46:03 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Add a new method copy, which creates a new copy of an
+	existing DateTime::Precise object.  Use copy to create
+	copies of times instead of new and clone.  Add tests for
+	copy.
+
+	Add comparison test between integer and fractional times.
+
+Sun Jun 21 12:05:38 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+
+	Have overloaded neg operator state the class of the offending
+	object instead of DateTime::Precise.
+
+	Have all of the set_* methods return the newly set object if
+	the set was successful, undef otherwise.
+
 Thu Apr 24 12:00:00 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Version 0.01

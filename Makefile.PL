@@ -1,5 +1,6 @@
 # This -*- perl -*- script writes the Makefile for this package.
 
+use strict;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(

@@ -34,7 +34,7 @@ use vars qw(
 # Addition handles seconds, subtraction handles secs or date
 # differences.  Comparisons also work.
 use overload
-    'neg' => sub { cluck "neg is an invalid operator for DateTime::Precise"; $_[0] },
+    'neg' => sub { cluck "neg is an invalid operator for " . ref($_[0]); $_[0] },
     '""'  => 'stringify',
     '+'   => 'ovld_add',
     '-'   => sub { $_[2] ? &ovld_sub($_[1],$_[0]) : &ovld_sub; },
@@ -42,7 +42,7 @@ use overload
 			   DateTime::Math::fcmp("$_[0]","$_[1]") },
     'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
     ;
-$VERSION = do {my @r=(q$Revision: 0.01 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
+$VERSION = do {my @r=(q$Revision: 0.02 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -319,30 +319,30 @@ sub _FixDate {
     $self->[FRACTION] = $fraction;
   }
   # Fix seconds.
-  while ($self->[SECOND]>59) {
-    $self->[SECOND]-=60;
+  while ($self->[SECOND] > 59) {
+    $self->[SECOND] -= 60;
     $self->[MINUTE]++;
   }
-  while ($self->[SECOND]<0) {
-    $self->[SECOND]+=60;
+  while ($self->[SECOND] < 0) {
+    $self->[SECOND] += 60;
     $self->[MINUTE]--;
   }
   # Fix minutes.
-  while ($self->[MINUTE]>59) {
-    $self->[MINUTE]-=60;
+  while ($self->[MINUTE] > 59) {
+    $self->[MINUTE] -= 60;
     $self->[HOUR]++;
   }
-  while ($self->[MINUTE]<0) {
-    $self->[MINUTE]+=60;
+  while ($self->[MINUTE] < 0) {
+    $self->[MINUTE] += 60;
     $self->[HOUR]--;
   }
   # Fix hours.
-  while ($self->[HOUR]>23) {
-    $self->[HOUR]-=24;
+  while ($self->[HOUR] > 23) {
+    $self->[HOUR] -= 24;
     $self->[DAY]++;
   }
-  while ($self->[HOUR]<0) {
-    $self->[HOUR]+=24;
+  while ($self->[HOUR] < 0) {
+    $self->[HOUR] += 24;
     $self->[DAY]--;
   }
 
@@ -354,23 +354,23 @@ sub _FixDate {
     FIX_DAY_MONTH:
   {
     # Fix months.
-    while ($self->[MONTH]>12) {
-      $self->[MONTH]-=12;
+    while ($self->[MONTH] > 12) {
+      $self->[MONTH] -= 12;
       $self->[YEAR]++;
     }
-    while ($self->[MONTH]<1) {
-      $self->[MONTH]+=12;
+    while ($self->[MONTH] < 1) {
+      $self->[MONTH] += 12;
       $self->[YEAR]--;
     }
     # Fix days.
-    if ($self->[DAY]>DaysInMonth($self->[MONTH],$self->[YEAR])) {
-      $self->[DAY]-=DaysInMonth($self->[MONTH],$self->[YEAR]);
+    if ($self->[DAY] > DaysInMonth($self->[MONTH], $self->[YEAR])) {
+      $self->[DAY] -= DaysInMonth($self->[MONTH], $self->[YEAR]);
       $self->[MONTH]++;
       redo FIX_DAY_MONTH;
     }
-    if ($self->[DAY]<1) {
+    if ($self->[DAY] < 1) {
       $self->[MONTH]--;
-      $self->[DAY]+=DaysInMonth($self->[MONTH],$self->[YEAR]);
+      $self->[DAY] += DaysInMonth($self->[MONTH], $self->[YEAR]);
       redo FIX_DAY_MONTH;
     }
   }
@@ -602,9 +602,9 @@ sub stringify {
 sub new {
   my $proto = shift;
   my $class = ref($proto) || $proto;
-  my $self  = [];
 
-  bless($self, $class);
+  # Create the blessed array with the correct number of elements.
+  my $self  = bless [YEAR .. FRACTION], $class;
 
   # Parse the input arguments depending upon the number of arguments.
   if (@_ == 0) {
@@ -620,6 +620,7 @@ sub new {
   elsif (@_ > 1) {
     $self->set_time(@_) or return;
   }
+
   $self;
 }
 # new
@@ -693,8 +694,8 @@ sub set_time {
   my $template = shift;
   my @values   = @_;
 
-  my $work = $self->new;
-  $work->clone($self);
+  # Make a copy of the current DateTime::Precise object to work on.
+  my $work = $self->copy;
 
   # If the input fails, then return an empty list in a list context, an
   # undefined value in a scalar context, or nothing in a void context.
@@ -788,7 +789,6 @@ sub set_time {
 
   # Set the real DateTime::Precise to the working one.
   $self->clone($work);
-  1;
 }
 
 sub get_time {
@@ -1002,8 +1002,17 @@ sub clone {
 }
 # clone
 
+#------------------------------------------- 
+# NOTES: Create a copy of this DateTime::Precise.
+# ACCESS: method
+# EXAMPLE: $t1 = $t2->copy;
+sub copy {
+  bless [ @{$_[0]} ], ref($_[0]);
+}
+
+
 # NOTES: Set (if param), or return the stringified DateTime::Precise.
-# NOTES: See clone() for a better way to copy DateTime::Precises.
+# NOTES: See copy() for a better way to copy DateTime::Precises.
 # ARG2 $in: (optional) estring to set internal to.
 # RETVAL: estring
 # ACCESS: method
@@ -1040,7 +1049,7 @@ sub set_from_datetime {
     }
   }
   if ($ret) {
-    return $ret;
+    return $self;
   }
   else {
     return;
@@ -1106,7 +1115,6 @@ sub set_from_day_of_year {
   $a[DAY]   = $d;
   @$self    = (@a);
   $self->_FixDate;
-  1;
 }
 # set_from_day_of_year
 
@@ -1144,7 +1152,6 @@ sub set_from_serial_day {
   @a[HOUR..FRACTION] = FractionToHMS($sdn);
   @$self             = @a;
   $self->_FixDate;
-  1;
 }
 # set_from_serial_day
 
@@ -1159,7 +1166,8 @@ sub set_from_serial_day {
 # EXAMPLE: $dt->set_localtime_from_epoch_time(time);
 sub set_localtime_from_epoch_time {
   my $self  = shift;
-  my $epoch = shift || time;
+  my $epoch = shift;
+  $epoch    = time unless defined($epoch);
   my @a     = localtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
@@ -1168,7 +1176,7 @@ sub set_localtime_from_epoch_time {
   $self->[MINUTE]   = $a[1];
   $self->[SECOND]   = $a[0];
   $self->[FRACTION] = 0;
-  1;
+  $self;
 }
 # set_localtime_from_epoch_time
 
@@ -1183,7 +1191,8 @@ sub set_localtime_from_epoch_time {
 # EXAMPLE: $dt->set_gmtime_from_epoch_time(time);
 sub set_gmtime_from_epoch_time {
   my $self  = shift;
-  my $epoch = shift || time;
+  my $epoch = shift;
+  $epoch    = time unless defined($epoch);
   my @a     = gmtime($epoch);
   $self->[YEAR]     = 1900 + $a[5];
   $self->[MONTH]    = $a[4] + 1;
@@ -1192,7 +1201,7 @@ sub set_gmtime_from_epoch_time {
   $self->[MINUTE]   = $a[1];
   $self->[SECOND]   = $a[0];
   $self->[FRACTION] = 0;
-  1;
+  $self;
 }
 # set_gmtime_from_epoch_time
 
@@ -1215,7 +1224,7 @@ sub set_from_gps_week_seconds {
   $self->addSec($gps_week * 7, DAY);
   $self->addSec($gps_seconds);
 
-  1;  
+  $self;
 }
 
 #----------------------------------------
@@ -1797,10 +1806,7 @@ sub ovld_add {
   my $n = shift;
   cluck "DateTime::Precise::ovld_add $n is really really huge (did you try to add two dates?)"
       if ("$n" > "10000000000");
-  my $r = $a->new();
-  $r->clone($a);
-  $r->addSec($n);		# inc_sec($n)
-  return $r;
+  $a->copy->addSec($n);
 }
 # ovld_add
 
@@ -1815,10 +1821,7 @@ sub ovld_sub {
   if ("$n" > "10000000000") {	# subing two DateTime::Precises
     return $a->diff($n);
   } else {
-    my $r = $a->new();	# create a new DateTime::Precise or subclass
-    $r->clone($a);	# equate 'internal's
-    $r->addSec(-$n);
-    return $r;
+    return $a->copy->addSec(-$n);
   }
 }
 # ovld_sub
@@ -1848,6 +1851,7 @@ additional GPS operations
  $t1->set_localtime_from_epoch_time;
  $t1->set_gmtime_from_epoch_time(time + 120);
  $t1->set_from_datetime('1998.03.23 16:58:14.65');
+ $t1->set_time('YDHMS', 1998, 177, 9, 15, 26.5);
 
  # This is the same as $d3->set_from_datetime(...)
  $t3->dscanf("%^Y.%M.%D %h:%m:%s", "1998.03.25 20:25:23");
@@ -1856,11 +1860,25 @@ additional GPS operations
      print "Must enter a three-letter month abbrev.\n";
  }
 
- # Print times.
+ # Get different parts of the time.
+ $year    = $t3->year;
+ $month   = $t3->month;
+ $day     = $t3->day;
+ $hours   = $t3->hours;
+ $minutes = $t3->minutes;
+ $seconds = $t3->seconds;
+ ($year, $day_of_year) = $t3->get_time('Yj');
+
+ # Print times and dates.
+ print $t2->asctime;
+ print $t2->strftime('%T %C%n');
  print $t2->dprintf("%^Y.%M.%D %h:%m:%s");           # datetime
  print $t2->dprintf("%~w %~M %-D %h:%m:%s CST %^Y"); # ctime
 
- # Copy time: set $t3 to $t2.
+ # Copy times.
+ my $t4 = $t2->copy;
+
+ # Set one time object to the same time as another: set $t3 equal to $t2.
  $t3->clone($t2);
 
  # Find the difference between two times.
@@ -1875,14 +1893,6 @@ additional GPS operations
  # Can compare and sort DateTime::Precise.
  print "It's late!!!" if ($t1 > $t4);
  @sorted = sort @birthdays;             # normal comparisons work fine
-
- # Print times and dates.
- print $t3->asctime, "\n";
- print $t2->strftime('%T %C%n');
-
- # Get and set different parts of the time.
- ($year, $day_of_year) = $t3->get_time('Yj');
- $t3->set_time('YD', $year, $day_of_year);
 
  # Get the GPS weeks, seconds and day.
  $gps_week    = $t1->gps_week;
@@ -1946,34 +1956,46 @@ a scalar context, or nothing in a void context.
 
 =item B<set_from_datetime> I<datetime>
 
-Set date/time from passed date/time string
-"YYYY.MM.DD hh:mm:ss.fff".
+Set date/time from passed date/time string "YYYY.MM.DD hh:mm:ss.fff".
+If I<set_from_datetime> successfully parses I<datetime>, then the newly
+set date/time object is returned, otherwise it returns an empty list in
+a list context, an undefined value in a scalar context, or nothing in a
+void context.
 
 =item B<set_localtime_from_epoch_time> [I<epoch>]
 
-Set from epoch time into the local time zone.  If I<epoch> is
-passed, then use that time to set the current time, otherwise use
-the time as returned from I<time>().
+Set from epoch time into the local time zone.  If I<epoch> is passed,
+then use that time to set the current time, otherwise use the time as
+returned from I<time>().  The newly set date/time object is returned.
 
 =item B<set_gmtime_from_epoch_time> [I<epoch>]
 
-Set from the epoch time into the standard Greenwich time zone.  If
-I<epoch> is passed, then use that time to set the current time,
-otherwise use the time as returned from I<time>().
+Set from the epoch time into the standard Greenwich time zone.  If I<epoch>
+is passed, then use that time to set the current time, otherwise use the
+time as returned from I<time>().  The newly set date/time object is returned.
 
 =item B<set_from_day_of_year> I<year> I<day_of_year>
 
-Set date/from from the year and the decimal day of the year.
-Midnight January 1st is day 1, noon January 1st is 1.5, etc.
+Set date/from from the year and the decimal day of the year.  Midnight
+January 1st is day 1, noon January 1st is 1.5, etc.  If the date was
+succesfully set, then the newly set date/time object is returned, otherwise
+it returns an empty list in a list context, an undefined value in a scalar
+context, or nothing in a void context.
 
 =item B<set_from_serial_day> I<serial_day_number>
 
-Set the date/time from the serial day.  See also L<serial_day>().
+Set the date/time from the serial day.  See also L<serial_day>().  If the
+date was successfully set, then the newly set date/time object is returned,
+otherwise is returns an empty list in a list context, an undefined value in
+a scalar context, or nothing in a void context.
 
 =item B<set_from_gps_week_seconds> I<gps_week> I<gps_seconds>
 
-Set the current time using the number of weeks and seconds into
-the week since GPS epoch (January 6, 1980 UTC).
+Set the current time using the number of weeks and seconds into the week
+since GPS epoch (January 6, 1980 UTC).  If the date was successfully set,
+then the newly set date/time object is returned, otherwise is returns an
+empty list in a list context, an undefined value in a scalar context, or
+nothing in a void context.
 
 =item B<set_time> I<format> [I<arg>, [I<arg>, ...]]
 
@@ -1999,9 +2021,10 @@ characters:
     M => Add minutes to time.  Argument taken.
     S => Add seconds to time.  Argument taken.
 
-If I<set_time> fails for any reason, the method returns an empty list in
-a list context, an undefined value in a scalar context, or nothing in
-a void context and the date and time remain unchanged.
+If the date and time was successfully set, then it returns the newly set
+date/time object, otherwise I<set_time> returns an empty list in a list
+context, an undefined value in a scalar context, or nothing in a void
+context and the date and time remain unchanged.
 
 =item B<get_time> I<string>
 
@@ -2010,10 +2033,6 @@ correspodning I<strftime>() value.  This string should not contain %
 characters.  This method is a much, much better and faster way of
 doing
     map {$self->strftime("%$_")} split(//, $string)
-
-=item B<clone> I<other_dt>
-    
-Set this DateTime::Precise equal to I<other_dt>.
 
 =item B<year> [I<year>]
 
@@ -2093,6 +2112,14 @@ current object.
 
 Return the GPS day of the week for the current object, where day 0
 is Sunday.
+
+=item B<copy>
+
+Return an identical copy of the current object.
+
+=item B<clone> I<other_dt>
+    
+Set this DateTime::Precise equal to I<other_dt>.
 
 =item B<dprintf> I<string>
     
