@@ -1,3 +1,14 @@
+Wed Jan 31 15:24:17 PST 2001 <blair@akamai.com> (Blair Zajac)
+
+	Release 1.01.
+
+Wed Jan 31 15:09:10 PST 2001 <blair@akamai.com> (Blair Zajac)
+
+	Fix a bug where a \s was not being properly added to a regular
+	expression.  This also fixes the 'Unrecognized escape \s
+	passed through at Precise.pm line 1483' warning when using
+	Perl 5.6.0.
+
 Thu Apr  8 10:20:30 PDT 1999 <blair@geostaff.com> (Blair Zajac)
 
 	Have ok() in t/*.t return the success or failure of the

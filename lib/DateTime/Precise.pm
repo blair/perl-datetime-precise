@@ -42,7 +42,7 @@ use overload
 			   DateTime::Math::fcmp("$_[0]","$_[1]") },
     'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") },
     ;
-$VERSION = do {my @r=(q$Revision: 1.00 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
+$VERSION   = substr q$Revision: 1.01 $, 10;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -1480,7 +1480,7 @@ sub extract_format {
 	  $mod = '';
 	}    
 	if ($type eq 'c') { # chunk of random (non-ws) crap
-	  $regex .= ($mod ? "[^\s]{$mod}" : '[^\s]+?');
+	  $regex .= ($mod ? "[^\\s]{$mod}" : '[^\s]+?');
 	} elsif ($type eq 'p') { # ignore any width spec for %p
 	  $regex .= '([a|p]m?)';
 	  $tags{'p'} = $arg++;
