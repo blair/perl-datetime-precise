@@ -1,8 +1,39 @@
-Sun Jun 10 20:10:19 PDT 2001
+Tue Aug 28 13:16:59 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* Release version 1.04.
+
+Tue Aug 28 13:14:01 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* README: Update Blair Zajac's email address to
+	  blair@orcaware.com.  Remove reference to the Caltech FTP
+	  site for a secondary repository of Blair Zajac's Perl
+	  modules.
+	* lib/DateTime/Precise.pm: Update Blair Zzajac's email address
+	  to blair@orcaware.com.
+
+Tue Aug 28 12:34:15 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* lib/DateTime/Precise.pm: The $VERSION variable was being set
+	  using
+
+	  $VERSION = substr q$Revision: 1.04 $, 10;'
+
+	  which did not properly set $VERSION to a numeric value in
+	  Perl 5.6.1 probably due to the trailing ' ' character after
+	  the number.  This resulted in 'use DateTime::Precise 1.03'
+	  failing to force Perl to use version 1.03 or newer of
+	  DateTime::Precise even if 1.02 or older was installed
+	  because $VERSION was set using substr and Perl would not
+	  consider $VERSION to be set.  Now use the longer but
+	  effective:
+
+	  $VERSION = sprintf '%d.%02d', '$Revision: 1.04 $' =~ /(\d+)\.(\d+)/;
+
+Sun Jun 10 20:10:19 PDT 2001 <blair@orcaware.com> (Blair Zajac) 
 
 	* Release 1.03.
 
-Sun Jun 10 18:54:44 PDT 2001 <blair@gps.caltech.edu> (Blair Zajac) 
+Sun Jun 10 18:54:44 PDT 2001 <blair@orcaware.com> (Blair Zajac) 
  
 	* lib/DateTime/Precise.pm: Try to import Time::HiRes::time to
 	  load a high resolution time.  Fix a bug when the time was
@@ -14,21 +45,21 @@ Sun Jun 10 18:54:44 PDT 2001 <blair@gps.caltech.edu> (Blair Zajac)
 	* t/01date_time.t: Reorder a test to ensure that the above bug
 	  in seconds() is checked.
 
-Thu Feb 22 20:37:22 PST 2001 <blair@akamai.com> (Blair Zajac)
+Thu Feb 22 20:37:22 PST 2001 <blair@orcaware.com> (Blair Zajac)
 
 	Release 1.02.
 
-Thu Feb 22 20:27:46 PST 2001 <blair@akamai.com> (Blair Zajac)
+Thu Feb 22 20:27:46 PST 2001 <blair@orcaware.com> (Blair Zajac)
 
 	Fix a bug where if 0 is passed to an increment or decrement
 	function, then it would actually increment the time by 1 unit.
 	Check for a defined value instead of a non-0 or non-'' value.
 
-Wed Jan 31 15:24:17 PST 2001 <blair@akamai.com> (Blair Zajac)
+Wed Jan 31 15:24:17 PST 2001 <blair@orcaware.com> (Blair Zajac)
 
 	Release 1.01.
 
-Wed Jan 31 15:09:10 PST 2001 <blair@akamai.com> (Blair Zajac)
+Wed Jan 31 15:09:10 PST 2001 <blair@orcaware.com> (Blair Zajac)
 
 	Fix a bug where a \s was not being properly added to a regular
 	expression.  This also fixes the 'Unrecognized escape \s
@@ -42,7 +73,7 @@ Thu Apr  8 10:20:30 PDT 1999 <blair@geostaff.com> (Blair Zajac)
 
 	Release 1.00.
 
-Thu Oct 22 09:11:09 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Thu Oct 22 09:11:09 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Fix a bug in new() where it wouldn't correctly set the time
 	using the one argument form of time.  This bug found by
@@ -52,7 +83,7 @@ Thu Oct 22 09:11:09 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Release 0.04.
 
-Sun Jun 28 11:56:40 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Sun Jun 28 11:56:40 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Add dscanf('%u') which loads GMT time into the object.  This is to
 	complement dscanf('%U') which loads local time into the object.
@@ -64,11 +95,11 @@ Sun Jun 28 11:56:40 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Release 0.03.
 
-Fri Jun 26 16:57:37 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Fri Jun 26 16:57:37 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Add a new jday() method that returns day_of_year() - 1.
 
-Fri Jun 26 15:06:52 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Fri Jun 26 15:06:52 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	New() didn't properly initialize the underlying representation
 	of DateTime::Precise before it was passed off to set_time().
@@ -78,7 +109,7 @@ Fri Jun 26 15:06:52 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Release version 0.02.
 
-Mon Jun 22 13:46:03 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Mon Jun 22 13:46:03 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Add a new method copy, which creates a new copy of an
 	existing DateTime::Precise object.  Use copy to create
@@ -87,7 +118,7 @@ Mon Jun 22 13:46:03 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Add comparison test between integer and fractional times.
 
-Sun Jun 21 12:05:38 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Sun Jun 21 12:05:38 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Have overloaded neg operator state the class of the offending
 	object instead of DateTime::Precise.
@@ -95,7 +126,7 @@ Sun Jun 21 12:05:38 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 	Have all of the set_* methods return the newly set object if
 	the set was successful, undef otherwise.
 
-Thu Apr 24 12:00:00 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
+Thu Apr 24 12:00:00 PDT 1998 <blair@orcaware.com> (Blair Zajac)
 
 	Version 0.01
 	First version.

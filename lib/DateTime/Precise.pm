@@ -5,7 +5,7 @@
 # subsecond precision on all calculations and a whole bunch of
 # additional method calls.
 #
-# Latest author: Blair Zajac (blair@gps.caltech.edu).
+# Latest author: Blair Zajac (blair@orcaware.com).
 # Original author: Greg Fast (gdfast@usgs.gov).
 
 package DateTime::Precise;
@@ -53,7 +53,7 @@ use overload
                  DateTime::Math::fcmp("$_[0]","$_[1]") },
   'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") };
 
-$VERSION   = substr q$Revision: 1.03 $, 10;
+$VERSION   = sprintf '%d.%02d', '$Revision: 1.04 $' =~ /(\d+)\.(\d+)/;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(&IsLeapYear &DaysInMonth);
 @EXPORT_OK = qw($USGSMidnight
@@ -2448,7 +2448,7 @@ day, hours, minutes, seconds, and fractional seconds.
 
 =head1 AUTHOR
 
-Contact: Blair Zajac <blair@gps.caltech.edu>.  The original version of
+Contact: Blair Zajac <blair@orcaware.com>.  The original version of
 this was was based on DateTime written by Greg Fast <gdfast@usgs.gov>.
 
 =cut

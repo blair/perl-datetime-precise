@@ -1,4 +1,4 @@
-Package DateTime::Precise version 1.03
+Package DateTime::Precise version 1.04
 
 This is the DateTime::Precise package.  This module provides for the
 representation and manipulation of (almost) arbitrary locations in
@@ -36,10 +36,6 @@ The latest version of this package is available for download from a CPAN
 (Comprehensive Perl Archive Network) site near your at
 
         http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/
-
-or from my FTP site:
-
-        ftp://ftp.gps.caltech.edu/pub/blair/Perl/
 
 INSTALLATION
 
@@ -81,4 +77,4 @@ minutes, seconds, and fractional seconds.
 AUTHOR, COMMENTS, AND BUGS
 
 I welcome all comments and bug reports.  Please email them to
-Blair Zajac <blair@gps.caltech.edu>.
+Blair Zajac <blair@orcaware.com>.
