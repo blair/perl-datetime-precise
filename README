@@ -1,4 +1,4 @@
-Package DateTime::Precise version 0.04
+Package DateTime::Precise version 1.00
 
 This is the DateTime::Precise package.  This module provides for the
 representation and manipulation of (almost) arbitrary locations in

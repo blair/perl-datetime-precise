@@ -1,3 +1,10 @@
+Thu Apr  8 10:20:30 PDT 1999 <blair@geostaff.com> (Blair Zajac)
+
+	Have ok() in t/*.t return the success or failure of the
+	test instead of the number of tests performed.
+
+	Release 1.00.
+
 Thu Oct 22 09:11:09 PDT 1998 <blair@gps.caltech.edu> (Blair Zajac)
 
 	Fix a bug in new() where it wouldn't correctly set the time
