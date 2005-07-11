@@ -46,7 +46,7 @@ Tue Aug 28 12:34:15 PDT 2001 <blair@orcaware.com> Blair Zajac
 	* lib/DateTime/Precise.pm: The $VERSION variable was being set
 	  using
 
-	  $VERSION = substr q$Revision: 1.04 $, 10;'
+	  $VERSION = substr q$Revision$, 10;'
 
 	  which did not properly set $VERSION to a numeric value in
 	  Perl 5.6.1 probably due to the trailing ' ' character after
@@ -57,7 +57,7 @@ Tue Aug 28 12:34:15 PDT 2001 <blair@orcaware.com> Blair Zajac
 	  consider $VERSION to be set.  Now use the longer but
 	  effective:
 
-	  $VERSION = sprintf '%d.%02d', '$Revision: 1.04 $' =~ /(\d+)\.(\d+)/;
+	  $VERSION = sprintf '%d.%02d', '$Revision$' =~ /(\d+)\.(\d+)/;
 
 Sun Jun 10 20:10:19 PDT 2001
 
