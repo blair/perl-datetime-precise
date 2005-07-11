@@ -52,7 +52,7 @@ use overload
                  DateTime::Math::fcmp("$_[0]","$_[1]") },
   'cmp' => sub { $_[2] ? ("$_[1]" cmp "$_[0]") : ("$_[0]" cmp "$_[1]") };
 
-$VERSION   = sprintf '%d.%02d', '$Revision$' =~ /(\d+)\.(\d+)/;
+$VERSION   = 1.05;
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw($USGSMidnight
                 @MonthDays @MonthName @MonthAbbrev @WeekName @WeekAbbrev
